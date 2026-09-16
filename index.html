@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#ff6b8b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>냠냠 팡팡! 수학 놀이터</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- PWA 원클릭 앱 설치 배너 -->
+    <div id="pwa-install-banner" class="install-banner" style="display: none;">
+      <div class="install-banner-text">
+        <span>📲</span> 폰에 앱으로 설치하고 바로 실행하기!
+      </div>
+      <button id="pwa-install-btn" class="install-action-btn">설치</button>
+      <button id="pwa-close-btn" class="install-close-btn">✕</button>
+    </div>
+
+    <!-- 컨페티 효과 캔버스 -->
+    <canvas id="confetti-canvas" class="confetti-layer"></canvas>
+
+    <!-- 상단 네비게이션 & 상태 바 -->
+    <header class="top-nav">
+      <button id="home-btn" class="nav-btn" title="처음으로">🏠</button>
+      <div class="top-stats">
+        <div class="stat-badge star">⭐ <span id="star-count-display">0</span></div>
+        <div class="stat-badge">🎁 <span id="sticker-count-display">0</span></div>
+      </div>
+      <button id="sound-toggle-btn" class="nav-btn" title="소리 켜기/끄기">🔊</button>
+    </header>
+
+    <!-- 1. 메인 홈 화면 -->
+    <main id="home-screen" class="screen home-screen active">
+      <div class="main-title-box">
+        <span class="logo-badge">놀면서 배우는 재미있는 수학!</span>
+        <h1 class="main-title">냠냠 팡팡!<br>수학 놀이터</h1>
+      </div>
+
+      <div class="mascot-area">
+        <div class="mascot-char" id="main-mascot">🐻</div>
+      </div>
+
+      <!-- 테마 선택 바 (동물 / 공룡 / 우주 / 자동차) -->
+      <div class="theme-selector-box">
+        <div class="theme-title">🎨 신나는 테마를 골라보세요!</div>
+        <div class="theme-tabs">
+          <button class="theme-btn active" data-theme="animals">
+            <span class="theme-icon">🐻</span>
+            <span>동물</span>
+          </button>
+          <button class="theme-btn" data-theme="dino">
+            <span class="theme-icon">🦖</span>
+            <span>공룡</span>
+          </button>
+          <button class="theme-btn" data-theme="space">
+            <span class="theme-icon">🚀</span>
+            <span>우주</span>
+          </button>
+          <button class="theme-btn" data-theme="car">
+            <span class="theme-icon">🏎️</span>
+            <span>자동차</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 난이도 선택 바 (기초 5이하는 제외하고 6~10이 1단계) -->
+      <div class="difficulty-selector">
+        <div class="diff-title">🎯 도전할 난이도를 골라보세요!</div>
+        <div class="diff-tabs">
+          <button class="diff-btn active" data-level="1">1단계<br>(6~10)</button>
+          <button class="diff-btn" data-level="2">2단계<br>(11~15)</button>
+          <button class="diff-btn" data-level="3">3단계<br>(16~20)</button>
+        </div>
+      </div>
+
+      <!-- 게임 모드 선택 메뉴 -->
+      <div class="menu-list">
+        <div class="game-card-btn add-mode" id="btn-mode-add">
+          <div class="btn-icon">🍎</div>
+          <div class="btn-info">
+            <h3>냠냠 동물 식당</h3>
+            <p>과일을 먹여주며 신나게 더하기!</p>
+          </div>
+        </div>
+
+        <div class="game-card-btn sub-mode" id="btn-mode-sub">
+          <div class="btn-icon">🎈</div>
+          <div class="btn-info">
+            <h3>팡팡 풍선 터뜨리기</h3>
+            <p>풍선을 톡 터뜨리며 뺄셈 놀이!</p>
+          </div>
+        </div>
+
+        <div class="game-card-btn quiz-mode" id="btn-mode-quiz">
+          <div class="btn-icon">⭐</div>
+          <div class="btn-info">
+            <h3>별나라 퀴즈</h3>
+            <p>스피드 퀴즈 풀고 별 모으기!</p>
+          </div>
+        </div>
+
+        <div class="game-card-btn sticker-mode" id="btn-mode-stickers">
+          <div class="btn-icon">📖</div>
+          <div class="btn-info">
+            <h3>내 보물 스티커북</h3>
+            <p>내가 모은 칭찬 스티커 보러가기</p>
+          </div>
+        </div>
+
+        <!-- PC 없이 평생 단독 실행 안내 & 다운로드 버튼 -->
+        <div class="standalone-download-card" style="background:#fff9db; border:2px dashed #f59f00; border-radius:18px; padding:12px; margin-top:8px; text-align:center;">
+          <div style="font-size:13px; font-weight:bold; color:#d9480f; margin-bottom:6px;">
+            💻 PC를 끄고도 스마트폰에서 단독 실행하고 싶다면?
+          </div>
+          <a href="독립실행_kids_math_game.html" download="수학놀이터.html" style="display:inline-block; background:#ff922b; color:white; padding:8px 18px; border-radius:14px; text-decoration:none; font-size:14px; font-weight:bold; box-shadow:0 3px 6px rgba(0,0,0,0.15);">
+            📥 스마트폰에 단독실행 파일 다운로드
+          </a>
+          <div style="font-size:11px; color:#868e96; margin-top:6px; line-height:1.4;">
+            다운로드 후 폰의 [내 파일 ➡️ 다운로드]에서 열고<br>[홈 화면에 추가]하면 PC 없이 평생 단독 실행됩니다!
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 2. 게임 플레이 화면 (공통) -->
+    <section id="game-play-screen" class="screen">
+      <!-- 안내 문구 및 음성 다시듣기 -->
+      <div class="game-header-box">
+        <div id="prompt-text" class="prompt-text">문제를 준비하고 있어요...</div>
+        <button id="replay-voice-btn" class="voice-replay-btn">
+          <span>🔊</span> 다시 들려줘!
+        </button>
+      </div>
+
+      <!-- 수식 표시 바 -->
+      <div class="equation-bar">
+        <span id="eq-num1" class="num-pill">0</span>
+        <span id="eq-operator">+</span>
+        <span id="eq-num2" class="num-pill">0</span>
+        <span>=</span>
+        <span id="eq-ans" class="num-pill unknown">?</span>
+      </div>
+
+      <!-- 인터랙티브 놀이 무대 -->
+      <div class="stage-area" id="game-stage">
+        <!-- 자바스크립트가 동적으로 채움 -->
+      </div>
+
+      <!-- 보기 버튼 키패드 -->
+      <div class="choices-area" id="choices-area">
+        <!-- 보기 버튼이 생성됨 -->
+      </div>
+    </section>
+
+    <!-- 3. 스티커북 화면 -->
+    <section id="sticker-book-screen" class="screen sticker-book-screen">
+      <div class="game-header-box">
+        <h2 style="font-size:24px; color:#d9480f;">🎨 내 보물 스티커북</h2>
+        <p style="font-size:14px; color:#868e96; margin-top:4px;">문제를 맞출 때마다 받은 반짝이 스티커들이에요!</p>
+      </div>
+
+      <div class="sticker-board" id="sticker-board">
+        <!-- 수집한 스티커들이 렌더링됨 -->
+      </div>
+    </section>
+
+    <!-- 정답 축하 보상 팝업 모달 -->
+    <div id="reward-modal-overlay" class="modal-overlay">
+      <div class="reward-modal">
+        <div id="modal-reward-icon" class="reward-icon">⭐</div>
+        <h2 id="modal-reward-title" class="reward-title">참 잘했어요!</h2>
+        <p id="modal-reward-desc" class="reward-desc">새로운 칭찬 스티커를 받았어요!</p>
+        <button id="modal-next-btn" class="modal-next-btn">다음 문제로 Go! 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="audio.js"></script>
+  <script src="game.js"></script>
+  <script>
+    // 서비스 워커 등록 (오프라인 실행 및 자동 업데이트 지원)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => {
+            console.log('SW 등록 성공:', reg.scope);
+            reg.update(); // 최신 버전 있는지 즉시 확인
+          })
+          .catch((err) => console.log('SW 등록 실패:', err));
+      });
+
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+    }
+
+    // 안드로이드 앱 원클릭 설치 (PWA beforeinstallprompt)
+    let deferredPrompt = null;
+    const installBanner = document.getElementById('pwa-install-banner');
+    const installBtn = document.getElementById('pwa-install-btn');
+    const closeBtn = document.getElementById('pwa-close-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBanner) {
+        installBanner.style.display = 'flex';
+      }
+    });
+
+    if (installBtn) {
+      installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        installBanner.style.display = 'none';
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('User install choice:', outcome);
+        deferredPrompt = null;
+      });
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        installBanner.style.display = 'none';
+      });
+    }
+
+    window.addEventListener('appinstalled', () => {
+      if (installBanner) installBanner.style.display = 'none';
+      console.log('PWA 앱 설치 완료!');
+    });
+  </script>
+</body>
+</html>

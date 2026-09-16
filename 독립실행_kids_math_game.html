@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#ff6b8b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>냠냠 팡팡! 수학 놀이터</title>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Round&display=swap');
+
+:root {
+  --primary: #ff6b8b;
+  --primary-light: #ffd3db;
+  --secondary: #4dabf7;
+  --secondary-light: #d0ebff;
+  --accent: #ffd43b;
+  --success: #51cf66;
+  --bg-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --header-bg: #fff0f3;
+  --header-border: #ffdeeb;
+  --title-color: #d6336c;
+  --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+}
+
+/* 테마 1: 공룡 대탐험 테마 */
+body.theme-dino {
+  --primary: #2b8a3e;
+  --primary-light: #d3f9d8;
+  --secondary: #f59f00;
+  --secondary-light: #fff3bf;
+  --accent: #fab005;
+  --bg-gradient: linear-gradient(135deg, #d8f5a2 0%, #8ce99a 100%);
+  --header-bg: #ebfbee;
+  --header-border: #b2f2bb;
+  --title-color: #2b8a3e;
+}
+
+/* 테마 2: 우주 탐험 테마 */
+body.theme-space {
+  --primary: #7950f2;
+  --primary-light: #e5dbff;
+  --secondary: #22b8cf;
+  --secondary-light: #c5f6fa;
+  --accent: #ffd43b;
+  --bg-gradient: linear-gradient(135deg, #e5dbff 0%, #d0ebff 100%);
+  --header-bg: #f3f0ff;
+  --header-border: #d0bfff;
+  --title-color: #5f3dc4;
+}
+
+/* 테마 3: 부릉부릉 자동차 테마 */
+body.theme-car {
+  --primary: #e8590c;
+  --primary-light: #ffe8cc;
+  --secondary: #1c7ed6;
+  --secondary-light: #d0ebff;
+  --accent: #fcc419;
+  --bg-gradient: linear-gradient(135deg, #ffe8cc 0%, #ffd8a8 100%);
+  --header-bg: #fff4e6;
+  --header-border: #ffd8a8;
+  --title-color: #d9480f;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  font-family: 'Jua', 'Nanum Round', sans-serif;
+  background: #ffe3e3;
+  background: linear-gradient(180deg, #ffecd2 0%, #fcb69f 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #495057;
+  overflow-x: hidden;
+}
+
+/* 모바일 폰 컨테이너 */
+#app-container {
+  width: 100%;
+  max-width: 440px;
+  min-height: 100vh;
+  height: 100dvh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+@media (min-width: 500px) {
+  #app-container {
+    height: 92vh;
+    min-height: 780px;
+    border-radius: 40px;
+    border: 8px solid #ffccd5;
+  }
+}
+
+/* PWA 설치 배너 */
+.install-banner {
+  background: linear-gradient(135deg, #ff6b8b, #ff8787);
+  color: white;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  box-shadow: 0 4px 10px rgba(255, 107, 139, 0.3);
+  z-index: 100;
+  animation: popIn 0.3s ease;
+}
+
+.install-banner-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: bold;
+}
+
+.install-action-btn {
+  background: #ffd43b;
+  color: #d9480f;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  white-space: nowrap;
+}
+
+.install-action-btn:active {
+  transform: scale(0.92);
+}
+
+.install-close-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* 상단 네비게이션 헤더 */
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--header-bg);
+  border-bottom: 3px solid var(--header-border);
+  z-index: 10;
+}
+
+.nav-btn {
+  background: white;
+  border: 2px solid var(--primary-light);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, background-color 0.15s;
+}
+
+.nav-btn:active {
+  transform: scale(0.9);
+  background: var(--primary-light);
+}
+
+.top-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.stat-badge {
+  background: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 16px;
+  border: 2px solid var(--primary-light);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+}
+
+.stat-badge.star {
+  color: #f08c00;
+  border-color: #ffe066;
+}
+
+/* 테마 선택 바 */
+.theme-selector-box {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 10px;
+  box-shadow: var(--shadow);
+  border: 2px solid var(--primary-light);
+  margin-bottom: 12px;
+}
+
+.theme-title {
+  font-size: 14px;
+  color: var(--primary);
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.theme-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.theme-btn {
+  padding: 8px 2px;
+  border: 2px solid #e9ecef;
+  background: #f8f9fa;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #495057;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.2s;
+}
+
+.theme-btn span.theme-icon {
+  font-size: 20px;
+}
+
+.theme-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* 메인 화면 영역 */
+.screen {
+  flex: 1;
+  display: none;
+  flex-direction: column;
+  padding: 16px 20px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* 홈 화면 */
+.home-screen {
+  justify-content: space-between;
+  text-align: center;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  background: var(--bg-gradient);
+}
+
+.main-title-box {
+  margin-top: 10px;
+}
+
+.logo-badge {
+  display: inline-block;
+  background: var(--primary);
+  color: white;
+  padding: 4px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+/* 메인 타이틀 */
+.main-title {
+  font-size: 32px;
+  color: var(--title-color);
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+  line-height: 1.25;
+}
+
+.mascot-area {
+  margin: 15px auto;
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bounce 2s infinite ease-in-out;
+}
+
+.mascot-char {
+  font-size: 110px;
+  filter: drop-shadow(0 12px 16px rgba(255, 107, 139, 0.25));
+}
+
+/* 난이도 선택 바 */
+.difficulty-selector {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 10px;
+  box-shadow: var(--shadow);
+  border: 2px solid #ffd8a8;
+  margin-bottom: 16px;
+}
+
+.diff-title {
+  font-size: 14px;
+  color: #e8590c;
+  margin-bottom: 8px;
+}
+
+.diff-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.diff-btn {
+  flex: 1;
+  padding: 10px 4px;
+  border: 2px solid #ffe8cc;
+  background: #fff9db;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #d9480f;
+  transition: all 0.2s;
+}
+
+.diff-btn.active {
+  background: #ff922b;
+  color: white;
+  border-color: #f76707;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(247, 103, 7, 0.3);
+}
+
+/* 홈 메뉴 버튼 목록 */
+.menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.game-card-btn {
+  background: white;
+  border: 3px solid #ffccd5;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-align: left;
+}
+
+.game-card-btn:active {
+  transform: scale(0.96);
+}
+
+.game-card-btn.add-mode {
+  border-color: #ffd8a8;
+  background: linear-gradient(90deg, #ffffff 0%, #fff4e6 100%);
+}
+
+.game-card-btn.sub-mode {
+  border-color: #a5d8ff;
+  background: linear-gradient(90deg, #ffffff 0%, #e7f5ff 100%);
+}
+
+.game-card-btn.quiz-mode {
+  border-color: #b2f2bb;
+  background: linear-gradient(90deg, #ffffff 0%, #ebfbee 100%);
+}
+
+.game-card-btn.sticker-mode {
+  border-color: #eebefa;
+  background: linear-gradient(90deg, #ffffff 0%, #f8f0fc 100%);
+}
+
+.btn-icon {
+  font-size: 40px;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+
+.btn-info h3 {
+  font-size: 20px;
+  color: #343a40;
+  margin-bottom: 2px;
+}
+
+.btn-info p {
+  font-size: 13px;
+  color: #868e96;
+}
+
+/* 게임 플레이 화면 공통 */
+.game-header-box {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 2px solid #ffccd5;
+  margin-bottom: 14px;
+}
+
+.prompt-text {
+  font-size: 21px;
+  color: #c2255c;
+  line-height: 1.35;
+}
+
+.voice-replay-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  background: #fff0f6;
+  border: 1px solid #fcc2d7;
+  color: #e64980;
+  padding: 4px 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* 수식 표시 바 */
+.equation-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 34px;
+  color: #212529;
+  background: #f8f9fa;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  border: 2px dashed #dee2e6;
+}
+
+.num-pill {
+  background: white;
+  border-radius: 12px;
+  padding: 4px 14px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+  border: 2px solid #adb5bd;
+}
+
+.num-pill.unknown {
+  color: #ff6b8b;
+  border-color: #ff8787;
+  background: #fff5f5;
+  min-width: 50px;
+  text-align: center;
+  animation: pulse 1.5s infinite;
+}
+
+/* 게임 무대 (동물, 풍선 등) */
+.stage-area {
+  flex: 1;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  border: 3px solid #ffdeeb;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 250px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+/* 동물 먹이주기 스테이지 */
+.feeder-stage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.animal-avatar {
+  font-size: 80px;
+  transition: transform 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.animal-avatar.nom-nom {
+  animation: animalEat 0.35s ease;
+}
+
+.food-count-bubble {
+  position: absolute;
+  top: -10px;
+  right: -15px;
+  background: #ff6b8b;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+.food-basket {
+  width: 100%;
+  background: #fff4e6;
+  border-radius: var(--radius-md);
+  border: 2px solid #ffd8a8;
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  min-height: 80px;
+}
+
+.food-item {
+  font-size: 38px;
+  width: 54px;
+  height: 54px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.2s;
+}
+
+.food-item:active {
+  transform: scale(1.2);
+}
+
+.food-item.eaten {
+  opacity: 0.2;
+  transform: scale(0.6);
+  pointer-events: none;
+}
+
+/* 풍선 터뜨리기 스테이지 */
+.balloon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.balloon {
+  font-size: 46px;
+  width: 65px;
+  height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+  animation: floatBalloon 3s infinite ease-in-out alternate;
+}
+
+.balloon:active {
+  transform: scale(0.85);
+}
+
+.balloon.popped {
+  animation: popEffect 0.3s forwards;
+  pointer-events: none;
+}
+
+/* 보기 선택 버튼 영역 (키패드) */
+.choices-area {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.choice-btn {
+  background: white;
+  border: 3px solid #ffccd5;
+  border-radius: var(--radius-md);
+  height: 64px;
+  font-size: 28px;
+  font-family: inherit;
+  color: #495057;
+  cursor: pointer;
+  box-shadow: 0 5px 12px rgba(0,0,0,0.06);
+  transition: transform 0.1s, background-color 0.15s, border-color 0.15s;
+}
+
+.choice-btn:active {
+  transform: scale(0.92);
+  background: #ffdeeb;
+  border-color: #ff6b8b;
+}
+
+/* 스티커 보관함 화면 */
+.sticker-book-screen {
+  background: #fdf2e9;
+  text-align: center;
+}
+
+.sticker-board {
+  flex: 1;
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 4px dashed #fcc419;
+  margin: 14px 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  padding: 16px;
+  gap: 12px;
+}
+
+.sticker-board-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #adb5bd;
+  font-size: 16px;
+  gap: 8px;
+}
+
+.placed-sticker {
+  font-size: 48px;
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 축하 팝업 모달 */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(3px);
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.reward-modal {
+  background: white;
+  width: 85%;
+  max-width: 320px;
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+  border: 4px solid #ffd43b;
+  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.reward-icon {
+  font-size: 72px;
+  margin: 10px 0;
+  display: inline-block;
+  animation: spinTrophy 1.2s ease;
+}
+
+.reward-title {
+  font-size: 26px;
+  color: #e8590c;
+  margin-bottom: 6px;
+}
+
+.reward-desc {
+  font-size: 16px;
+  color: #495057;
+  margin-bottom: 20px;
+}
+
+.modal-next-btn {
+  background: linear-gradient(135deg, #ff6b8b, #ff8e53);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  font-size: 20px;
+  font-family: inherit;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(255, 107, 139, 0.4);
+  width: 100%;
+}
+
+.modal-next-btn:active {
+  transform: scale(0.95);
+}
+
+/* 컨페티(별가루 효과) */
+.confetti-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 99;
+}
+
+/* 애니메이션 */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  80% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes animalEat {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25) rotate(-5deg); }
+  70% { transform: scale(1.2) rotate(5deg); }
+  100% { transform: scale(1); }
+}
+
+@keyframes floatBalloon {
+  0% { transform: translateY(0px) rotate(-3deg); }
+  100% { transform: translateY(-8px) rotate(3deg); }
+}
+
+@keyframes popEffect {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+.shake-it {
+  animation: shake 0.3s ease-in-out;
+}
+
+</style>
+</head>
+<body>
+  <div id="app-container">
+    <!-- PWA 원클릭 앱 설치 배너 -->
+    <div id="pwa-install-banner" class="install-banner" style="display: none;">
+      <div class="install-banner-text">
+        <span>📲</span> 폰에 앱으로 설치하고 바로 실행하기!
+      </div>
+      <button id="pwa-install-btn" class="install-action-btn">설치</button>
+      <button id="pwa-close-btn" class="install-close-btn">✕</button>
+    </div>
+
+    <!-- 컨페티 효과 캔버스 -->
+    <canvas id="confetti-canvas" class="confetti-layer"></canvas>
+
+    <!-- 상단 네비게이션 & 상태 바 -->
+    <header class="top-nav">
+      <button id="home-btn" class="nav-btn" title="처음으로">🏠</button>
+      <div class="top-stats">
+        <div class="stat-badge star">⭐ <span id="star-count-display">0</span></div>
+        <div class="stat-badge">🎁 <span id="sticker-count-display">0</span></div>
+      </div>
+      <button id="sound-toggle-btn" class="nav-btn" title="소리 켜기/끄기">🔊</button>
+    </header>
+
+    <!-- 1. 메인 홈 화면 -->
+    <main id="home-screen" class="screen home-screen active">
+      <div class="main-title-box">
+        <span class="logo-badge">놀면서 배우는 재미있는 수학!</span>
+        <h1 class="main-title">냠냠 팡팡!<br>수학 놀이터</h1>
+      </div>
+
+      <div class="mascot-area">
+        <div class="mascot-char" id="main-mascot">🐻</div>
+      </div>
+
+      <!-- 테마 선택 바 (동물 / 공룡 / 우주 / 자동차) -->
+      <div class="theme-selector-box">
+        <div class="theme-title">🎨 신나는 테마를 골라보세요!</div>
+        <div class="theme-tabs">
+          <button class="theme-btn active" data-theme="animals">
+            <span class="theme-icon">🐻</span>
+            <span>동물</span>
+          </button>
+          <button class="theme-btn" data-theme="dino">
+            <span class="theme-icon">🦖</span>
+            <span>공룡</span>
+          </button>
+          <button class="theme-btn" data-theme="space">
+            <span class="theme-icon">🚀</span>
+            <span>우주</span>
+          </button>
+          <button class="theme-btn" data-theme="car">
+            <span class="theme-icon">🏎️</span>
+            <span>자동차</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 난이도 선택 바 (기초 5이하는 제외하고 6~10이 1단계) -->
+      <div class="difficulty-selector">
+        <div class="diff-title">🎯 도전할 난이도를 골라보세요!</div>
+        <div class="diff-tabs">
+          <button class="diff-btn active" data-level="1">1단계<br>(6~10)</button>
+          <button class="diff-btn" data-level="2">2단계<br>(11~15)</button>
+          <button class="diff-btn" data-level="3">3단계<br>(16~20)</button>
+        </div>
+      </div>
+
+      <!-- 게임 모드 선택 메뉴 -->
+      <div class="menu-list">
+        <div class="game-card-btn add-mode" id="btn-mode-add">
+          <div class="btn-icon">🍎</div>
+          <div class="btn-info">
+            <h3>냠냠 동물 식당</h3>
+            <p>과일을 먹여주며 신나게 더하기!</p>
+          </div>
+        </div>
+
+        <div class="game-card-btn sub-mode" id="btn-mode-sub">
+          <div class="btn-icon">🎈</div>
+          <div class="btn-info">
+            <h3>팡팡 풍선 터뜨리기</h3>
+            <p>풍선을 톡 터뜨리며 뺄셈 놀이!</p>
+          </div>
+        </div>
+
+        <div class="game-card-btn quiz-mode" id="btn-mode-quiz">
+          <div class="btn-icon">⭐</div>
+          <div class="btn-info">
+            <h3>별나라 퀴즈</h3>
+            <p>스피드 퀴즈 풀고 별 모으기!</p>
+          </div>
+        </div>
+
+        <div class="game-card-btn sticker-mode" id="btn-mode-stickers">
+          <div class="btn-icon">📖</div>
+          <div class="btn-info">
+            <h3>내 보물 스티커북</h3>
+            <p>내가 모은 칭찬 스티커 보러가기</p>
+          </div>
+        </div>
+
+        <!-- PC 없이 평생 단독 실행 안내 & 다운로드 버튼 -->
+        <div class="standalone-download-card" style="background:#fff9db; border:2px dashed #f59f00; border-radius:18px; padding:12px; margin-top:8px; text-align:center;">
+          <div style="font-size:13px; font-weight:bold; color:#d9480f; margin-bottom:6px;">
+            💻 PC를 끄고도 스마트폰에서 단독 실행하고 싶다면?
+          </div>
+          <a href="독립실행_kids_math_game.html" download="수학놀이터.html" style="display:inline-block; background:#ff922b; color:white; padding:8px 18px; border-radius:14px; text-decoration:none; font-size:14px; font-weight:bold; box-shadow:0 3px 6px rgba(0,0,0,0.15);">
+            📥 스마트폰에 단독실행 파일 다운로드
+          </a>
+          <div style="font-size:11px; color:#868e96; margin-top:6px; line-height:1.4;">
+            다운로드 후 폰의 [내 파일 ➡️ 다운로드]에서 열고<br>[홈 화면에 추가]하면 PC 없이 평생 단독 실행됩니다!
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 2. 게임 플레이 화면 (공통) -->
+    <section id="game-play-screen" class="screen">
+      <!-- 안내 문구 및 음성 다시듣기 -->
+      <div class="game-header-box">
+        <div id="prompt-text" class="prompt-text">문제를 준비하고 있어요...</div>
+        <button id="replay-voice-btn" class="voice-replay-btn">
+          <span>🔊</span> 다시 들려줘!
+        </button>
+      </div>
+
+      <!-- 수식 표시 바 -->
+      <div class="equation-bar">
+        <span id="eq-num1" class="num-pill">0</span>
+        <span id="eq-operator">+</span>
+        <span id="eq-num2" class="num-pill">0</span>
+        <span>=</span>
+        <span id="eq-ans" class="num-pill unknown">?</span>
+      </div>
+
+      <!-- 인터랙티브 놀이 무대 -->
+      <div class="stage-area" id="game-stage">
+        <!-- 자바스크립트가 동적으로 채움 -->
+      </div>
+
+      <!-- 보기 버튼 키패드 -->
+      <div class="choices-area" id="choices-area">
+        <!-- 보기 버튼이 생성됨 -->
+      </div>
+    </section>
+
+    <!-- 3. 스티커북 화면 -->
+    <section id="sticker-book-screen" class="screen sticker-book-screen">
+      <div class="game-header-box">
+        <h2 style="font-size:24px; color:#d9480f;">🎨 내 보물 스티커북</h2>
+        <p style="font-size:14px; color:#868e96; margin-top:4px;">문제를 맞출 때마다 받은 반짝이 스티커들이에요!</p>
+      </div>
+
+      <div class="sticker-board" id="sticker-board">
+        <!-- 수집한 스티커들이 렌더링됨 -->
+      </div>
+    </section>
+
+    <!-- 정답 축하 보상 팝업 모달 -->
+    <div id="reward-modal-overlay" class="modal-overlay">
+      <div class="reward-modal">
+        <div id="modal-reward-icon" class="reward-icon">⭐</div>
+        <h2 id="modal-reward-title" class="reward-title">참 잘했어요!</h2>
+        <p id="modal-reward-desc" class="reward-desc">새로운 칭찬 스티커를 받았어요!</p>
+        <button id="modal-next-btn" class="modal-next-btn">다음 문제로 Go! 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+// Web Audio API 기반 효과음 합성기 + Web Speech API 한국어 TTS
+class SoundManager {
+  constructor() {
+    this.ctx = null;
+    this.isMuted = false;
+    this.speechEnabled = true;
+  }
+
+  init() {
+    if (!this.ctx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        this.ctx = new AudioContext();
+      }
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+
+  playTone(freq, duration, type = 'sine', gainVal = 0.2) {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+
+  // 뿅 터지는 소리
+  playPop() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.13);
+    } catch(e) {}
+  }
+
+  // 냠냠 먹는 소리
+  playNom() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const t = this.ctx.currentTime;
+      [350, 420, 280].forEach((f, i) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, t + i * 0.06);
+        gain.gain.setValueAtTime(0.25, t + i * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + i * 0.06 + 0.05);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + i * 0.06);
+        osc.stop(t + i * 0.06 + 0.05);
+      });
+    } catch(e) {}
+  }
+
+  // 정답 팡파레
+  playCorrect() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+      const t = this.ctx.currentTime;
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t + idx * 0.1);
+        gain.gain.setValueAtTime(0.28, t + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.1 + (idx === 3 ? 0.45 : 0.15));
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + idx * 0.1);
+        osc.stop(t + idx * 0.1 + (idx === 3 ? 0.5 : 0.18));
+      });
+    } catch(e) {}
+  }
+
+  // 격려 사운드
+  playEncourage() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const notes = [523.25, 440]; // C5, A4
+      const t = this.ctx.currentTime;
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t + idx * 0.15);
+        gain.gain.setValueAtTime(0.18, t + idx * 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.15 + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + idx * 0.15);
+        osc.stop(t + idx * 0.15 + 0.22);
+      });
+    } catch(e) {}
+  }
+
+  // 별 획득 소리
+  playStar() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const notes = [783.99, 987.77, 1174.66, 1567.98];
+      const t = this.ctx.currentTime;
+      notes.forEach((f, i) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, t + i * 0.07);
+        gain.gain.setValueAtTime(0.2, t + i * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.07 + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + i * 0.07);
+        osc.stop(t + i * 0.07 + 0.27);
+      });
+    } catch(e) {}
+  }
+
+  // 버튼 클릭음
+  playClick() {
+    this.playTone(600, 0.05, 'triangle', 0.15);
+  }
+
+  // 테마 특화 사운드: 공룡 쿵 (묵직한 발걸음)
+  playDinoStomp() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(35, this.ctx.currentTime + 0.25);
+      gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.26);
+    } catch(e) {}
+  }
+
+  // 테마 특화 사운드: 우주 레이저 (퓨융!)
+  playLaser() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(880, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.18);
+      gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.19);
+    } catch(e) {}
+  }
+
+  // 테마 특화 사운드: 자동차 빵빵 (경적)
+  playCarHonk() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const t = this.ctx.currentTime;
+      [349.23, 440].forEach(f => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, t);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.setValueAtTime(0.25, t + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.16);
+      });
+    } catch(e) {}
+  }
+
+  // 한국어 음성 읽어주기 (TTS)
+  speak(text) {
+    if (!this.speechEnabled || !('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ko-KR';
+      utterance.rate = 0.95;
+      utterance.pitch = 1.3;
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+}
+
+window.sound = new SoundManager();
+
+
+// 6세 맞춤형 수학 모험 게임 로직
+
+// 전역 상태
+const STATE = {
+  stars: 0,
+  currentMode: null, // 'add', 'sub', 'quiz'
+  difficulty: 1,     // 1단계: 6~10 (5이하는 제외됨), 2단계: 11~15, 3단계: 16~20
+  currentTheme: 'animals', // 'animals', 'dino', 'space', 'car'
+  currentProblem: null,
+  eatenCount: 0,
+  poppedCount: 0,
+  stickers: [],
+  soundMuted: false,
+};
+
+// 스티커 풀 (보상용 귀여운 이모지들)
+const STICKER_POOL = [
+  '⭐', '🌟', '🌈', '🍭', '🍓', '🧁', '🍦', '🍕',
+  '🐶', '🐱', '🐰', '🐻', '🐼', '🦁', '🦖', '🚀',
+  '🏎️', '⚽', '👑', '🎁', '🎈', '💖', '🦄', '🐣'
+];
+
+// 테마 정의 (아이들이 좋아하는 4가지 모험 월드)
+const THEMES = {
+  animals: {
+    id: 'animals',
+    name: '동물 친구들',
+    mascot: '🐻',
+    title: '냠냠 팡팡!<br>수학 놀이터',
+    voiceIntro: '귀여운 동물 친구들과 놀아봐요!',
+    targets: [
+      { icon: '🐻', name: '곰돌이' },
+      { icon: '🐰', name: '토끼' },
+      { icon: '🐼', name: '판다' },
+      { icon: '🐶', name: '강아지' },
+      { icon: '🐱', name: '야옹이' },
+      { icon: '🦁', name: '사자' }
+    ],
+    addItems: ['🍎', '🍓', '🍌', '🍇', '🥕', '🍩', '🍪', '🥞'],
+    addPrompt: (t, n1, n2) => `${t.name}에게 간식 ${n1}개와 ${n2}개를 줄 거야. 모두 몇 개일까?`,
+    addTitle: (t) => `${t.icon} ${t.name}에게 줄 간식은 모두 몇 개일까?`,
+    addFeedAction: () => window.sound.playNom(),
+    subItems: ['🎈', '🔴', '🟡', '🟢', '🟣', '🟠', '🔵'],
+    subPrompt: (n1, n2) => `풍선 ${n1}개 중에 ${n2}개를 톡 터뜨려봐! 남은 풍선은 몇 개일까?`,
+    subTitle: (n2) => `풍선 ${n2}개를 톡! 터뜨리고 남은 개수를 맞춰봐!`,
+    subUnit: '개',
+    subAction: () => window.sound.playPop()
+  },
+  dino: {
+    id: 'dino',
+    name: '공룡 대탐험',
+    mascot: '🦖',
+    title: '쿵쿵 크아앙!<br>공룡 수학 모험',
+    voiceIntro: '쿵쿵! 신나는 공룡 대탐험이에요!',
+    targets: [
+      { icon: '🦖', name: '티라노' },
+      { icon: '🦕', name: '브라키오' },
+      { icon: '🦅', name: '프테라노돈' },
+      { icon: '🐊', name: '아기공룡' }
+    ],
+    addItems: ['🍖', '🥩', '🍗', '🌿', '🪵', '🍄', '🍎'],
+    addPrompt: (t, n1, n2) => `배고픈 ${t.name}에게 먹이 ${n1}개와 ${n2}개를 먹여줄 거야. 모두 몇 개일까?`,
+    addTitle: (t) => `${t.icon} ${t.name}에게 줄 먹이는 모두 몇 개일까?`,
+    addFeedAction: () => window.sound.playDinoStomp(),
+    subItems: ['🥚', '🥚', '🥚', '🥚', '🥚', '🥚', '🥚'],
+    subPrompt: (n1, n2) => `공룡 알 ${n1}개 중 ${n2}개를 톡톡 깨뜨려봐! 남은 알은 몇 개일까?`,
+    subTitle: (n2) => `공룡 알 ${n2}개를 톡! 깨뜨리고 남은 알을 세어봐!`,
+    subUnit: '개',
+    subAction: () => window.sound.playDinoStomp()
+  },
+  space: {
+    id: 'space',
+    name: '우주 별나라',
+    mascot: '🚀',
+    title: '슈우웅 퓨융!<br>우주 수학 탐험',
+    voiceIntro: '반짝반짝 신비한 우주 탐험이에요!',
+    targets: [
+      { icon: '🚀', name: '우주선' },
+      { icon: '🛸', name: 'UFO' },
+      { icon: '👨‍🚀', name: '우주비행사' },
+      { icon: '👾', name: '외계인 친구' }
+    ],
+    addItems: ['⭐', '⚡', '🔋', '💎', '🪐', '💫', '🌟'],
+    addPrompt: (t, n1, n2) => `${t.name}에 별 에너지 ${n1}개와 ${n2}개를 충전할 거야. 모두 몇 개일까?`,
+    addTitle: (t) => `${t.icon} ${t.name}에 충전할 에너지는 모두 몇 개일까?`,
+    addFeedAction: () => window.sound.playStar(),
+    subItems: ['☄️', '🌑', '🪐', '🌌', '🛸', '🛰️', '💫'],
+    subPrompt: (n1, n2) => `우주 운석 ${n1}개 중 ${n2}개를 레이저로 팡! 파괴해봐! 남은 운석은 몇 개일까?`,
+    subTitle: (n2) => `운석 ${n2}개를 레이저로 팡! 쏘고 남은 것을 세어봐!`,
+    subUnit: '개',
+    subAction: () => window.sound.playLaser()
+  },
+  car: {
+    id: 'car',
+    name: '씽씽 자동차',
+    mascot: '🏎️',
+    title: '부릉부릉 빵빵!<br>자동차 수학 레이싱',
+    voiceIntro: '부릉부릉! 신나는 자동차 레이싱이에요!',
+    targets: [
+      { icon: '🅿️', name: '주차장' },
+      { icon: '🏁', name: '도착지' },
+      { icon: '⛽', name: '주유소' },
+      { icon: '🚏', name: '정류장' }
+    ],
+    addItems: ['🚗', '🚙', '🚕', '🚓', '🚑', '🚒', '🚚', '🏎️'],
+    addPrompt: (t, n1, n2) => `${t.name}에 자동차 ${n1}대와 ${n2}대가 들어왔어. 모두 몇 대일까?`,
+    addTitle: (t) => `${t.icon} ${t.name}에 모인 자동차는 모두 몇 대일까?`,
+    addFeedAction: () => window.sound.playCarHonk(),
+    subItems: ['🚗', '🚕', '🚙', '🏎️', '🚐', '🚚', '🛵'],
+    subPrompt: (n1, n2) => `자동차 ${n1}대 중 ${n2}대가 부릉 출발했어! 남은 차는 몇 대일까?`,
+    subTitle: (n2) => `자동차 ${n2}대를 탭해서 슝 출발시키고 남은 차를 세어봐!`,
+    subUnit: '대',
+    subAction: () => window.sound.playCarHonk()
+  }
+};
+
+// 초기화
+document.addEventListener('DOMContentLoaded', () => {
+  loadSavedData();
+  setupUIEventListeners();
+  updateHeaderStats();
+});
+
+function loadSavedData() {
+  try {
+    const savedStars = localStorage.getItem('math_kids_stars');
+    const savedStickers = localStorage.getItem('math_kids_stickers');
+    const savedDiff = localStorage.getItem('math_kids_diff');
+    const savedTheme = localStorage.getItem('math_kids_theme');
+    if (savedStars) STATE.stars = parseInt(savedStars, 10);
+    if (savedStickers) STATE.stickers = JSON.parse(savedStickers);
+    if (savedDiff) {
+      STATE.difficulty = parseInt(savedDiff, 10);
+      document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.level, 10) === STATE.difficulty);
+      });
+    }
+    if (savedTheme && THEMES[savedTheme]) {
+      applyTheme(savedTheme, false);
+    }
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem('math_kids_stars', STATE.stars);
+    localStorage.setItem('math_kids_stickers', JSON.stringify(STATE.stickers));
+    localStorage.setItem('math_kids_diff', STATE.difficulty);
+    localStorage.setItem('math_kids_theme', STATE.currentTheme);
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
+function applyTheme(themeId, speakAnnouncement = true) {
+  const theme = THEMES[themeId];
+  if (!theme) return;
+  STATE.currentTheme = themeId;
+  saveData();
+
+  // 바디 클래스 변경
+  document.body.className = themeId === 'animals' ? '' : `theme-${themeId}`;
+
+  // 마스코트 & 타이틀 변경
+  const mascotEl = document.getElementById('main-mascot');
+  if (mascotEl) mascotEl.textContent = theme.mascot;
+
+  const titleEl = document.querySelector('.main-title');
+  if (titleEl) titleEl.innerHTML = theme.title;
+
+  // 탭 active 갱신
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.theme === themeId);
+  });
+
+  if (speakAnnouncement) {
+    window.sound.speak(theme.voiceIntro);
+  }
+}
+
+function updateHeaderStats() {
+  document.getElementById('star-count-display').textContent = STATE.stars;
+  document.getElementById('sticker-count-display').textContent = STATE.stickers.length;
+}
+
+// 이벤트 리스너 세팅
+function setupUIEventListeners() {
+  // 첫 터치/클릭 시 오디오 활성화
+  document.body.addEventListener('touchstart', () => window.sound.init(), { once: true });
+  document.body.addEventListener('click', () => window.sound.init(), { once: true });
+
+  // 상단 홈 버튼
+  document.getElementById('home-btn').addEventListener('click', () => {
+    window.sound.playClick();
+    showScreen('home-screen');
+  });
+
+  // 상단 소리 토글 버튼
+  const soundBtn = document.getElementById('sound-toggle-btn');
+  soundBtn.addEventListener('click', () => {
+    STATE.soundMuted = !STATE.soundMuted;
+    window.sound.isMuted = STATE.soundMuted;
+    window.sound.speechEnabled = !STATE.soundMuted;
+    soundBtn.textContent = STATE.soundMuted ? '🔇' : '🔊';
+    if (!STATE.soundMuted) window.sound.playClick();
+  });
+
+  // 테마 선택 버튼 클릭 이벤트
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      window.sound.playClick();
+      const themeId = e.currentTarget.dataset.theme;
+      applyTheme(themeId, true);
+    });
+  });
+
+  // 난이도 선택 버튼 (1단계: 6~10부터 시작)
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      window.sound.playClick();
+      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+      STATE.difficulty = parseInt(e.currentTarget.dataset.level, 10);
+      saveData();
+      
+      const diffNames = {
+        1: '1단계, 6부터 10까지 덧셈 뺄셈이에요!',
+        2: '2단계, 10 만들기랑 15까지 도전해봐요!',
+        3: '3단계, 20까지 최고 난이도예요!'
+      };
+      window.sound.speak(diffNames[STATE.difficulty]);
+    });
+  });
+
+  // 게임 모드 선택
+  document.getElementById('btn-mode-add').addEventListener('click', () => startAddMode());
+  document.getElementById('btn-mode-sub').addEventListener('click', () => startSubMode());
+  document.getElementById('btn-mode-quiz').addEventListener('click', () => startQuizMode());
+  document.getElementById('btn-mode-stickers').addEventListener('click', () => openStickerBook());
+
+  // 음성 다시 듣기 버튼
+  document.getElementById('replay-voice-btn').addEventListener('click', () => {
+    window.sound.playClick();
+    if (STATE.currentProblem && STATE.currentProblem.voiceText) {
+      window.sound.speak(STATE.currentProblem.voiceText);
+    }
+  });
+
+  // 다음 문제 모달 버튼
+  document.getElementById('modal-next-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    goToNextProblem();
+  });
+}
+
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+}
+
+// ----------------------------------------------------
+// 문제 생성기 (난이도 1단계는 6~10 수 범위 보장)
+// ----------------------------------------------------
+function generateProblem(type) {
+  let num1, num2, ans;
+  
+  if (type === 'add') {
+    if (STATE.difficulty === 1) {
+      ans = Math.floor(Math.random() * 5) + 6; // 6, 7, 8, 9, 10
+      num1 = Math.floor(Math.random() * (ans - 2)) + 1;
+      num2 = ans - num1;
+    } else if (STATE.difficulty === 2) {
+      ans = Math.floor(Math.random() * 6) + 10; // 10 ~ 15
+      num1 = Math.floor(Math.random() * 6) + 4;
+      num2 = ans - num1;
+    } else {
+      ans = Math.floor(Math.random() * 7) + 14; // 14 ~ 20
+      num1 = Math.floor(Math.random() * 7) + 7;
+      num2 = ans - num1;
+    }
+    return { num1, num2, ans, type: '+' };
+  } else {
+    // 뺄셈
+    if (STATE.difficulty === 1) {
+      num1 = Math.floor(Math.random() * 5) + 6; // 6, 7, 8, 9, 10
+      num2 = Math.floor(Math.random() * (num1 - 2)) + 1;
+      ans = num1 - num2;
+    } else if (STATE.difficulty === 2) {
+      num1 = Math.floor(Math.random() * 6) + 10;
+      num2 = Math.floor(Math.random() * 6) + 3;
+      ans = num1 - num2;
+    } else {
+      num1 = Math.floor(Math.random() * 6) + 15;
+      num2 = Math.floor(Math.random() * 8) + 5;
+      ans = num1 - num2;
+    }
+    return { num1, num2, ans, type: '-' };
+  }
+}
+
+// ----------------------------------------------------
+// [모드 1: 덧셈] 테마 맞춤형 합치기 모험
+// ----------------------------------------------------
+function startAddMode() {
+  STATE.currentMode = 'add';
+  showScreen('game-play-screen');
+  nextAddProblem();
+}
+
+function nextAddProblem() {
+  const prob = generateProblem('add');
+  STATE.currentProblem = prob;
+  STATE.eatenCount = 0;
+
+  const theme = THEMES[STATE.currentTheme] || THEMES.animals;
+  const target = theme.targets[Math.floor(Math.random() * theme.targets.length)];
+  const item1 = theme.addItems[Math.floor(Math.random() * theme.addItems.length)];
+  let item2 = theme.addItems[Math.floor(Math.random() * theme.addItems.length)];
+  while (item2 === item1) {
+    item2 = theme.addItems[Math.floor(Math.random() * theme.addItems.length)];
+  }
+
+  // 수식 표시
+  document.getElementById('eq-num1').textContent = prob.num1;
+  document.getElementById('eq-operator').textContent = '+';
+  document.getElementById('eq-num2').textContent = prob.num2;
+  document.getElementById('eq-ans').textContent = '?';
+
+  // 문제 음성 텍스트
+  const voice = theme.addPrompt(target, prob.num1, prob.num2);
+  prob.voiceText = voice;
+  document.getElementById('prompt-text').textContent = theme.addTitle(target);
+  window.sound.speak(voice);
+
+  // 스테이지 렌더링
+  const stage = document.getElementById('game-stage');
+  stage.innerHTML = `
+    <div class="feeder-stage">
+      <div class="animal-avatar" id="animal-target">
+        ${target.icon}
+        <div class="food-count-bubble" id="eaten-counter">0</div>
+      </div>
+      <div style="font-size:14px; color:#868e96; margin-bottom: 4px;">손가락으로 톡톡 터치해보세요!</div>
+      <div class="food-basket" id="food-basket"></div>
+    </div>
+  `;
+
+  // 바구니에 아이템 채우기
+  const basket = document.getElementById('food-basket');
+  for (let i = 0; i < prob.num1; i++) {
+    basket.appendChild(createFoodItem(item1, theme));
+  }
+  for (let i = 0; i < prob.num2; i++) {
+    basket.appendChild(createFoodItem(item2, theme));
+  }
+
+  // 보기 버튼 생성
+  renderChoices(prob.ans);
+}
+
+function createFoodItem(itemEmoji, theme) {
+  const item = document.createElement('div');
+  item.className = 'food-item';
+  item.textContent = itemEmoji;
+  item.addEventListener('click', () => {
+    if (item.classList.contains('eaten')) return;
+    item.classList.add('eaten');
+    
+    // 테마별 액션 사운드
+    theme.addFeedAction();
+    STATE.eatenCount++;
+    
+    // 애니메이션
+    const target = document.getElementById('animal-target');
+    target.classList.remove('nom-nom');
+    void target.offsetWidth;
+    target.classList.add('nom-nom');
+
+    document.getElementById('eaten-counter').textContent = STATE.eatenCount;
+    window.sound.speak(`${STATE.eatenCount}!`);
+
+    if (STATE.eatenCount === STATE.currentProblem.ans) {
+      window.sound.playStar();
+    }
+  });
+  return item;
+}
+
+// ----------------------------------------------------
+// [모드 2: 뺄셈] 테마 맞춤형 터뜨리기 / 출발 모험
+// ----------------------------------------------------
+function startSubMode() {
+  STATE.currentMode = 'sub';
+  showScreen('game-play-screen');
+  nextSubProblem();
+}
+
+function nextSubProblem() {
+  const prob = generateProblem('sub');
+  STATE.currentProblem = prob;
+  STATE.poppedCount = 0;
+
+  const theme = THEMES[STATE.currentTheme] || THEMES.animals;
+
+  // 수식 표시
+  document.getElementById('eq-num1').textContent = prob.num1;
+  document.getElementById('eq-operator').textContent = '-';
+  document.getElementById('eq-num2').textContent = prob.num2;
+  document.getElementById('eq-ans').textContent = '?';
+
+  const voice = theme.subPrompt(prob.num1, prob.num2);
+  prob.voiceText = voice;
+  document.getElementById('prompt-text').textContent = theme.subTitle(prob.num2);
+  window.sound.speak(voice);
+
+  // 스테이지 렌더링
+  const stage = document.getElementById('game-stage');
+  stage.innerHTML = `
+    <div style="font-size:14px; color:#e03131; margin-bottom:8px; font-weight:bold;">
+      목표: <span id="pop-target-display">${prob.num2}</span>${theme.subUnit} 중 <span id="pop-current-display">0</span>${theme.subUnit} 완료!
+    </div>
+    <div class="balloon-grid" id="balloon-grid"></div>
+  `;
+
+  const grid = document.getElementById('balloon-grid');
+  const items = theme.subItems;
+  for (let i = 0; i < prob.num1; i++) {
+    const balloon = document.createElement('div');
+    balloon.className = 'balloon';
+    balloon.textContent = items[i % items.length];
+    balloon.style.animationDelay = `${(i * 0.22).toFixed(2)}s`;
+
+    balloon.addEventListener('click', () => {
+      if (balloon.classList.contains('popped')) return;
+      
+      if (STATE.poppedCount < prob.num2) {
+        balloon.classList.add('popped');
+        theme.subAction();
+        STATE.poppedCount++;
+        document.getElementById('pop-current-display').textContent = STATE.poppedCount;
+
+        if (STATE.poppedCount === prob.num2) {
+          window.sound.speak(`잘했어! 이제 남은 개수를 세어볼까?`);
+        } else {
+          window.sound.speak(`${STATE.poppedCount}!`);
+        }
+      } else {
+        window.sound.speak(`이제 남은 개수를 세어서 정답을 골라봐!`);
+      }
+    });
+    grid.appendChild(balloon);
+  }
+
+  // 보기 버튼 생성
+  renderChoices(prob.ans);
+}
+
+// ----------------------------------------------------
+// [모드 3: 스피드 퀴즈] 별나라 모험
+// ----------------------------------------------------
+function startQuizMode() {
+  STATE.currentMode = 'quiz';
+  showScreen('game-play-screen');
+  nextQuizProblem();
+}
+
+function nextQuizProblem() {
+  const isAdd = Math.random() > 0.5;
+  const prob = generateProblem(isAdd ? 'add' : 'sub');
+  STATE.currentProblem = prob;
+
+  document.getElementById('eq-num1').textContent = prob.num1;
+  document.getElementById('eq-operator').textContent = prob.type;
+  document.getElementById('eq-num2').textContent = prob.num2;
+  document.getElementById('eq-ans').textContent = '?';
+
+  const opName = prob.type === '+' ? '더하기' : '빼기';
+  const voice = `${prob.num1} ${opName} ${prob.num2}는 얼마일까?`;
+  prob.voiceText = voice;
+  document.getElementById('prompt-text').textContent = `⭐ 별나라 퀴즈: ${prob.num1} ${prob.type} ${prob.num2} = ?`;
+  window.sound.speak(voice);
+
+  const stage = document.getElementById('game-stage');
+  const itemIcon = prob.type === '+' ? '⭐' : '💎';
+  
+  let visualHtml = '';
+  if (prob.type === '+') {
+    visualHtml = `
+      <div style="display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;">
+        <div style="background:#fff9db; padding:10px; border-radius:12px; border:2px solid #ffe066;">
+          ${Array(prob.num1).fill(itemIcon).join(' ')}
+        </div>
+        <span style="font-size:24px; font-weight:bold; color:#f08c00;">+</span>
+        <div style="background:#e7f5ff; padding:10px; border-radius:12px; border:2px solid #a5d8ff;">
+          ${Array(prob.num2).fill(itemIcon).join(' ')}
+        </div>
+      </div>
+    `;
+  } else {
+    visualHtml = `
+      <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
+        <div style="background:#fff5f5; padding:10px; border-radius:12px; border:2px solid #ffc9c9;">
+          ${Array(prob.num1).fill(itemIcon).join(' ')}
+        </div>
+        <div style="color:#e03131; font-size:15px; font-weight:bold;">
+          여기서 ${prob.num2}개를 쏙 빼면 몇 개가 남을까요?
+        </div>
+      </div>
+    `;
+  }
+
+  stage.innerHTML = `
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:14px;">
+      ${visualHtml}
+    </div>
+  `;
+
+  renderChoices(prob.ans);
+}
+
+// ----------------------------------------------------
+// 보기 버튼(키패드) 생성 및 정답 판별
+// ----------------------------------------------------
+function renderChoices(correctAns) {
+  const choicesArea = document.getElementById('choices-area');
+  choicesArea.innerHTML = '';
+
+  // 오답 후보 2개 생성 (정답과 1~3 차이나는 숫자)
+  const choices = [correctAns];
+  while (choices.length < 3) {
+    const diff = (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 2) + 1);
+    const candidate = correctAns + diff;
+    if (candidate > 0 && !choices.includes(candidate)) {
+      choices.push(candidate);
+    }
+  }
+
+  // 보기 섞기
+  choices.sort(() => Math.random() - 0.5);
+
+  choices.forEach(val => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = val;
+    btn.addEventListener('click', () => handleAnswer(val, correctAns, btn));
+    choicesArea.appendChild(btn);
+  });
+}
+
+let autoNextTimer = null;
+
+// 다음 문제로 넘어가기 공통 함수
+function goToNextProblem() {
+  if (autoNextTimer) {
+    clearTimeout(autoNextTimer);
+    autoNextTimer = null;
+  }
+  document.getElementById('reward-modal-overlay').classList.remove('active');
+  if (STATE.currentMode === 'add') nextAddProblem();
+  else if (STATE.currentMode === 'sub') nextSubProblem();
+  else if (STATE.currentMode === 'quiz') nextQuizProblem();
+}
+
+// 정답 선택 처리
+function handleAnswer(selectedVal, correctAns, btnElement) {
+  if (selectedVal === correctAns) {
+    // 정답! - 버튼 중복 클릭 방지
+    document.querySelectorAll('.choice-btn').forEach(b => b.style.pointerEvents = 'none');
+
+    window.sound.playCorrect();
+    document.getElementById('eq-ans').textContent = correctAns;
+    STATE.stars += 1;
+    
+    // 랜덤 스티커 보상 획득
+    const newSticker = STICKER_POOL[Math.floor(Math.random() * STICKER_POOL.length)];
+    STATE.stickers.push(newSticker);
+    saveData();
+    updateHeaderStats();
+
+    // 폭죽(컨페티) 발사
+    triggerConfetti();
+
+    // 칭찬 멘트
+    const compliments = [
+      '정답이야! 정말 대단해!',
+      '와아! 천재 아니야? 멋져!',
+      '딩동댕! 칭찬 스티커를 줄게!',
+      '우와! 최고야 최고!'
+    ];
+    const praise = compliments[Math.floor(Math.random() * compliments.length)];
+    window.sound.speak(`${correctAns}! ${praise}`);
+
+    // 축하 팝업 모달 띄우기
+    setTimeout(() => {
+      showRewardModal(newSticker, praise);
+    }, 450);
+  } else {
+    // 오답 (기죽지 않는 따뜻한 피드백)
+    window.sound.playEncourage();
+    btnElement.classList.add('shake-it');
+    setTimeout(() => btnElement.classList.remove('shake-it'), 400);
+
+    const encourages = [
+      '괜찮아! 다시 한번 세어볼까?',
+      '아쉽다! 천천히 다시 해보자!',
+      '할 수 있어! 하나씩 콕콕 세어봐!'
+    ];
+    const msg = encourages[Math.floor(Math.random() * encourages.length)];
+    window.sound.speak(msg);
+  }
+}
+
+// 축하 모달 표시 (1.5초 후 자동 다음 문제 이동 + 화면 어디든 탭해도 즉시 이동)
+function showRewardModal(sticker, praise) {
+  document.getElementById('modal-reward-icon').textContent = sticker;
+  document.getElementById('modal-reward-title').textContent = '참 잘했어요!';
+  document.getElementById('modal-reward-desc').textContent = `${praise} 새 스티커를 받았어요!`;
+  
+  const modalOverlay = document.getElementById('reward-modal-overlay');
+  modalOverlay.classList.add('active');
+
+  // 모달 영역 아무 곳이나 탭해도 즉시 넘어가기
+  modalOverlay.onclick = () => goToNextProblem();
+
+  // 아이가 가만히 있어도 1.6초 후 자동으로 다음 문제로 슝!
+  if (autoNextTimer) clearTimeout(autoNextTimer);
+  autoNextTimer = setTimeout(() => {
+    goToNextProblem();
+  }, 1600);
+}
+
+// ----------------------------------------------------
+// [스티커 보관함]
+// ----------------------------------------------------
+function openStickerBook() {
+  showScreen('sticker-book-screen');
+  window.sound.speak(`우와! 내가 모은 칭찬 스티커들이야! 모두 ${STATE.stickers.length}개나 모았어!`);
+  
+  const board = document.getElementById('sticker-board');
+  board.innerHTML = '';
+
+  if (STATE.stickers.length === 0) {
+    board.innerHTML = `
+      <div class="sticker-board-empty">
+        <div style="font-size: 48px;">🌟</div>
+        <p>아직 스티커가 없어요!</p>
+        <p>문제를 맞추고 반짝반짝 스티커를 모아봐요!</p>
+      </div>
+    `;
+    return;
+  }
+
+  STATE.stickers.forEach(stk => {
+    const el = document.createElement('div');
+    el.className = 'placed-sticker';
+    el.textContent = stk;
+    el.addEventListener('click', () => {
+      window.sound.playStar();
+    });
+    board.appendChild(el);
+  });
+}
+
+// ----------------------------------------------------
+// 컨페티(별가루 파티클) 효과
+// ----------------------------------------------------
+function triggerConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = canvas.parentElement.clientHeight;
+
+  const particles = [];
+  const colors = ['#ff6b8b', '#ffd43b', '#4dabf7', '#51cf66', '#cc5de8', '#ff922b'];
+
+  for (let i = 0; i < 45; i++) {
+    particles.push({
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      vx: (Math.random() - 0.5) * 12,
+      vy: (Math.random() - 0.8) * 14,
+      size: Math.random() * 8 + 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      gravity: 0.35,
+      opacity: 1
+    });
+  }
+
+  let animFrame;
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.opacity -= 0.015;
+      if (p.opacity > 0) {
+        alive = true;
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.opacity;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+    if (alive) {
+      animFrame = requestAnimationFrame(render);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      cancelAnimationFrame(animFrame);
+    }
+  }
+  render();
+}
+
+</script>
+  <script>
+    // 서비스 워커 등록 (오프라인 실행 및 자동 업데이트 지원)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => {
+            console.log('SW 등록 성공:', reg.scope);
+            reg.update(); // 최신 버전 있는지 즉시 확인
+          })
+          .catch((err) => console.log('SW 등록 실패:', err));
+      });
+
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+    }
+
+    // 안드로이드 앱 원클릭 설치 (PWA beforeinstallprompt)
+    let deferredPrompt = null;
+    const installBanner = document.getElementById('pwa-install-banner');
+    const installBtn = document.getElementById('pwa-install-btn');
+    const closeBtn = document.getElementById('pwa-close-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBanner) {
+        installBanner.style.display = 'flex';
+      }
+    });
+
+    if (installBtn) {
+      installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        installBanner.style.display = 'none';
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('User install choice:', outcome);
+        deferredPrompt = null;
+      });
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        installBanner.style.display = 'none';
+      });
+    }
+
+    window.addEventListener('appinstalled', () => {
+      if (installBanner) installBanner.style.display = 'none';
+      console.log('PWA 앱 설치 완료!');
+    });
+  </script>
+</body>
+</html>
