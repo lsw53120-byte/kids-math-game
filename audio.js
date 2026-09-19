@@ -341,11 +341,31 @@ class SoundManager {
     return formatted;
   }
 
-  // 자연스러운 한국어 음성 읽어주기 (1순위: Google Neural 고품질 여성 성우, 2순위: 로컬 음성)
-  speak(text) {
-    if (!this.speechEnabled) return;
-    this.stopSpeech();
+  // 고품질 자연스러운 한국어 음성(Voice) 탐색
+  getBestKoreanVoice() {
+    if (!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) return null;
 
+    // 1단계: ko-KR 또는 ko 언어 음성 필터링
+    const koVoices = voices.filter(v => v.lang && (v.lang.toLowerCase().startsWith('ko') || v.lang.toLowerCase().includes('korean')));
+    if (koVoices.length === 0) return null;
+
+    // 2단계: 선호 키워드 (Google 한국어, Natural, Neural, Online, Yuna, Sora)
+    const priorityKeywords = ['google', 'natural', 'neural', 'online', 'yuna', 'sora', 'sunhi', 'injoon'];
+    for (const kw of priorityKeywords) {
+      const found = koVoices.find(v => v.name && v.name.toLowerCase().includes(kw));
+      if (found) return found;
+    }
+
+    // 기본 한국어 보이스 반환
+    return koVoices[0];
+  }
+
+  // 자연스러운 한국어 음성 읽어주기 (100% 브라우저 호환 및 순우리말 발음 적용)
+  speak(text) {
+    if (!this.speechEnabled || !('speechSynthesis' in window)) return;
+    
     // 1단계: 순우리말 표준 발음 변환 (5대 -> 다섯 대, 3개 -> 세 개, 1! -> 하나!)
     const naturalText = this.formatKoreanNaturalSpeech(text);
 
@@ -357,40 +377,41 @@ class SoundManager {
 
     if (!cleanText) return;
 
-    // 1순위: 맑고 부드러운 Google Neural 음성 스트리밍 (진짜 사람 목소리 품질)
-    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ko&client=tw-ob&q=${encodeURIComponent(cleanText)}`;
-    const audio = new Audio();
-    this.currentSpeechAudio = audio;
-
-    let fallbackTriggered = false;
-    const triggerFallback = () => {
-      if (fallbackTriggered) return;
-      fallbackTriggered = true;
-      if (this.currentSpeechAudio === audio) {
-        this.currentSpeechAudio = null;
+    try {
+      // 크롬/사파리 일시정지 상태 해제
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
       }
-      this.speakFallback(cleanText);
-    };
+      window.speechSynthesis.cancel();
 
-    audio.src = ttsUrl;
-    audio.onplay = () => {
-      document.body.classList.add('is-ai-speaking');
-    };
-    audio.onended = () => {
-      document.body.classList.remove('is-ai-speaking');
-      if (this.currentSpeechAudio === audio) this.currentSpeechAudio = null;
-    };
-    audio.onerror = () => {
-      triggerFallback();
-    };
+      // 40ms 지연으로 이전 음성 캔슬 큐 비우기
+      setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = 'ko-KR';
 
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((err) => {
-        // 네트워크 차단 또는 브라우저 정책 시 Web Speech로 자동 전환
-        console.warn('Google Neural TTS play failed, fallback to local voice:', err);
-        triggerFallback();
-      });
+        const bestVoice = this.getBestKoreanVoice();
+        if (bestVoice) {
+          utterance.voice = bestVoice;
+        }
+
+        // 자연스럽고 또박또박한 톤 (인위적인 피치 변조 제거)
+        utterance.rate = 0.92;
+        utterance.pitch = 1.0;
+
+        utterance.onstart = () => {
+          document.body.classList.add('is-ai-speaking');
+        };
+        utterance.onend = () => {
+          document.body.classList.remove('is-ai-speaking');
+        };
+        utterance.onerror = () => {
+          document.body.classList.remove('is-ai-speaking');
+        };
+
+        window.speechSynthesis.speak(utterance);
+      }, 40);
+    } catch (e) {
+      console.warn('TTS error:', e);
     }
   }
 }
