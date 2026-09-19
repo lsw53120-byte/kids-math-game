@@ -7,7 +7,7 @@ echo.
 
 git add .
 git commit -m "Update kids math game"
-git push -u origin main
+git push -f origin main
 
 if %ERRORLEVEL% EQU 0 (
     echo.
