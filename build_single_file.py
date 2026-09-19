@@ -15,11 +15,11 @@ with open(os.path.join(base_dir, "game.js"), "r", encoding="utf-8") as f:
 with open(os.path.join(base_dir, "index.html"), "r", encoding="utf-8") as f:
     html = f.read()
 
-# 1. CSS 인라인 치환 (<link rel="stylesheet" href="style.css">)
-html = re.sub(r'<link[^>]*href=["\']style\.css["\'][^>]*>', f'<style>\n{css}\n</style>', html)
+# 1. CSS 인라인 치환
+html = re.sub(r'<link[^>]*href=["\']style\.css[^"\'\s]*["\'][^>]*>', f'<style>\n{css}\n</style>', html)
 
-# 2. JS 인라인 치환 (<script src="audio.js"></script> 및 <script src="game.js"></script>)
-script_pattern = r'<script[^>]*src=["\']audio\.js["\'][^>]*><\/script>\s*<script[^>]*src=["\']game\.js["\'][^>]*><\/script>'
+# 2. JS 인라인 치환
+script_pattern = r'<script[^>]*src=["\']audio\.js[^"\'\s]*["\'][^>]*><\/script>\s*<script[^>]*src=["\']game\.js[^"\'\s]*["\'][^>]*><\/script>'
 js_bundle = f'<script>\n{audio}\n\n{game}\n</script>'
 html, count = re.subn(script_pattern, lambda m: js_bundle, html)
 
