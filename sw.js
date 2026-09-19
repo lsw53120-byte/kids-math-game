@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kids-math-v2';
+const CACHE_NAME = 'kids-math-v4-neural';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -34,10 +34,21 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Network-First 전략: 항상 인터넷의 최신 버전을 먼저 받고, 오프라인일 때만 캐시 사용
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
