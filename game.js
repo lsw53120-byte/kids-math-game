@@ -1,10 +1,19 @@
 // 6세 맞춤형 수학 모험 게임 로직
 
+// 레벨 및 난이도별 목표 설정 (1단계: 1~5 추가 및 4단계 체계)
+const LEVEL_CONFIG = {
+  1: { level: 1, name: '1단계 (1~5)', targetStars: 5, rangeName: '1부터 5까지 기초 셈', reward: '👑' },
+  2: { level: 2, name: '2단계 (6~10)', targetStars: 7, rangeName: '6부터 10까지 셈', reward: '🏆' },
+  3: { level: 3, name: '3단계 (11~15)', targetStars: 8, rangeName: '11부터 15까지 셈', reward: '🌟' },
+  4: { level: 4, name: '4단계 (16~20)', targetStars: 10, rangeName: '20까지 최고 마스터', reward: '🚀' }
+};
+
 // 전역 상태
 const STATE = {
   stars: 0,
   currentMode: null, // 'add', 'sub', 'quiz'
-  difficulty: 1,     // 1단계: 6~10 (5이하는 제외됨), 2단계: 11~15, 3단계: 16~20
+  difficulty: 1,     // 1단계: 1~5, 2단계: 6~10, 3단계: 11~15, 4단계: 16~20
+  stageStars: 0,     // 현재 레벨 목표 달성용 별 개수
   currentTheme: 'animals', // 'animals', 'dino', 'space', 'car'
   currentProblem: null,
   eatenCount: 0,
@@ -17,17 +26,18 @@ const STATE = {
 const STICKER_POOL = [
   '⭐', '🌟', '🌈', '🍭', '🍓', '🧁', '🍦', '🍕',
   '🐶', '🐱', '🐰', '🐻', '🐼', '🦁', '🦖', '🚀',
-  '🏎️', '⚽', '👑', '🎁', '🎈', '💖', '🦄', '🐣'
+  '🏎️', '⚽', '👑', '🎁', '🎈', '💖', '🦄', '🐣',
+  '🏆', '🎪', '🛸', '💎', '🍉', '🥨', '🍰', '🐬'
 ];
 
-// 테마 정의 (아이들이 좋아하는 4가지 모험 월드)
+// 테마 정의 (자연스러운 쉼표 호흡 및 다정한 말투 적용)
 const THEMES = {
   animals: {
     id: 'animals',
     name: '동물 친구들',
     mascot: '🐻',
     title: '냠냠 팡팡!<br>수학 놀이터',
-    voiceIntro: '귀여운 동물 친구들과 놀아봐요!',
+    voiceIntro: '안녕! 귀여운 동물 친구들과 신나게 놀아봐요!',
     targets: [
       { icon: '🐻', name: '곰돌이' },
       { icon: '🐰', name: '토끼' },
@@ -37,11 +47,11 @@ const THEMES = {
       { icon: '🦁', name: '사자' }
     ],
     addItems: ['🍎', '🍓', '🍌', '🍇', '🥕', '🍩', '🍪', '🥞'],
-    addPrompt: (t, n1, n2) => `${t.name}에게 간식 ${n1}개와 ${n2}개를 줄 거야. 모두 몇 개일까?`,
+    addPrompt: (t, n1, n2) => `${t.name}에게, 간식 ${n1}개와, ${n2}개를 줄 거야. 모두 몇 개일까?`,
     addTitle: (t) => `${t.icon} ${t.name}에게 줄 간식은 모두 몇 개일까?`,
     addFeedAction: () => window.sound.playNom(),
     subItems: ['🎈', '🔴', '🟡', '🟢', '🟣', '🟠', '🔵'],
-    subPrompt: (n1, n2) => `풍선 ${n1}개 중에 ${n2}개를 톡 터뜨려봐! 남은 풍선은 몇 개일까?`,
+    subPrompt: (n1, n2) => `풍선 ${n1}개 중에, ${n2}개를 톡 터뜨려봐! 남은 풍선은 몇 개일까?`,
     subTitle: (n2) => `풍선 ${n2}개를 톡! 터뜨리고 남은 개수를 맞춰봐!`,
     subUnit: '개',
     subAction: () => window.sound.playPop()
@@ -51,7 +61,7 @@ const THEMES = {
     name: '공룡 대탐험',
     mascot: '🦖',
     title: '쿵쿵 크아앙!<br>공룡 수학 모험',
-    voiceIntro: '쿵쿵! 신나는 공룡 대탐험이에요!',
+    voiceIntro: '쿵쿵! 멋진 공룡 대탐험을 시작해요!',
     targets: [
       { icon: '🦖', name: '티라노' },
       { icon: '🦕', name: '브라키오' },
@@ -59,11 +69,11 @@ const THEMES = {
       { icon: '🐊', name: '아기공룡' }
     ],
     addItems: ['🍖', '🥩', '🍗', '🌿', '🪵', '🍄', '🍎'],
-    addPrompt: (t, n1, n2) => `배고픈 ${t.name}에게 먹이 ${n1}개와 ${n2}개를 먹여줄 거야. 모두 몇 개일까?`,
+    addPrompt: (t, n1, n2) => `배고픈 ${t.name}에게, 먹이 ${n1}개와, ${n2}개를 먹여줄 거야. 모두 몇 개일까?`,
     addTitle: (t) => `${t.icon} ${t.name}에게 줄 먹이는 모두 몇 개일까?`,
     addFeedAction: () => window.sound.playDinoStomp(),
     subItems: ['🥚', '🥚', '🥚', '🥚', '🥚', '🥚', '🥚'],
-    subPrompt: (n1, n2) => `공룡 알 ${n1}개 중 ${n2}개를 톡톡 깨뜨려봐! 남은 알은 몇 개일까?`,
+    subPrompt: (n1, n2) => `공룡 알 ${n1}개 중에서, ${n2}개를 톡톡 깨뜨려봐! 남은 알은 몇 개일까?`,
     subTitle: (n2) => `공룡 알 ${n2}개를 톡! 깨뜨리고 남은 알을 세어봐!`,
     subUnit: '개',
     subAction: () => window.sound.playDinoStomp()
@@ -73,7 +83,7 @@ const THEMES = {
     name: '우주 별나라',
     mascot: '🚀',
     title: '슈우웅 퓨융!<br>우주 수학 탐험',
-    voiceIntro: '반짝반짝 신비한 우주 탐험이에요!',
+    voiceIntro: '반짝반짝 신비한 우주로 모험을 떠나요!',
     targets: [
       { icon: '🚀', name: '우주선' },
       { icon: '🛸', name: 'UFO' },
@@ -81,11 +91,11 @@ const THEMES = {
       { icon: '👾', name: '외계인 친구' }
     ],
     addItems: ['⭐', '⚡', '🔋', '💎', '🪐', '💫', '🌟'],
-    addPrompt: (t, n1, n2) => `${t.name}에 별 에너지 ${n1}개와 ${n2}개를 충전할 거야. 모두 몇 개일까?`,
+    addPrompt: (t, n1, n2) => `${t.name}에, 별 에너지 ${n1}개와, ${n2}개를 충전할 거야. 모두 몇 개일까?`,
     addTitle: (t) => `${t.icon} ${t.name}에 충전할 에너지는 모두 몇 개일까?`,
     addFeedAction: () => window.sound.playStar(),
     subItems: ['☄️', '🌑', '🪐', '🌌', '🛸', '🛰️', '💫'],
-    subPrompt: (n1, n2) => `우주 운석 ${n1}개 중 ${n2}개를 레이저로 팡! 파괴해봐! 남은 운석은 몇 개일까?`,
+    subPrompt: (n1, n2) => `우주 운석 ${n1}개 중, ${n2}개를 레이저로 팡! 쏘아봐! 남은 운석은 몇 개일까?`,
     subTitle: (n2) => `운석 ${n2}개를 레이저로 팡! 쏘고 남은 것을 세어봐!`,
     subUnit: '개',
     subAction: () => window.sound.playLaser()
@@ -95,7 +105,7 @@ const THEMES = {
     name: '씽씽 자동차',
     mascot: '🏎️',
     title: '부릉부릉 빵빵!<br>자동차 수학 레이싱',
-    voiceIntro: '부릉부릉! 신나는 자동차 레이싱이에요!',
+    voiceIntro: '부릉부릉! 신나는 자동차 레이싱을 출발해요!',
     targets: [
       { icon: '🅿️', name: '주차장' },
       { icon: '🏁', name: '도착지' },
@@ -103,11 +113,11 @@ const THEMES = {
       { icon: '🚏', name: '정류장' }
     ],
     addItems: ['🚗', '🚙', '🚕', '🚓', '🚑', '🚒', '🚚', '🏎️'],
-    addPrompt: (t, n1, n2) => `${t.name}에 자동차 ${n1}대와 ${n2}대가 들어왔어. 모두 몇 대일까?`,
+    addPrompt: (t, n1, n2) => `${t.name}에, 자동차 ${n1}대와, ${n2}대가 들어왔어. 모두 몇 대일까?`,
     addTitle: (t) => `${t.icon} ${t.name}에 모인 자동차는 모두 몇 대일까?`,
     addFeedAction: () => window.sound.playCarHonk(),
     subItems: ['🚗', '🚕', '🚙', '🏎️', '🚐', '🚚', '🛵'],
-    subPrompt: (n1, n2) => `자동차 ${n1}대 중 ${n2}대가 부릉 출발했어! 남은 차는 몇 대일까?`,
+    subPrompt: (n1, n2) => `자동차 ${n1}대 중, ${n2}대가 부릉 출발했어! 남은 차는 몇 대일까?`,
     subTitle: (n2) => `자동차 ${n2}대를 탭해서 슝 출발시키고 남은 차를 세어봐!`,
     subUnit: '대',
     subAction: () => window.sound.playCarHonk()
@@ -119,18 +129,21 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSavedData();
   setupUIEventListeners();
   updateHeaderStats();
+  updateLevelGoalProgress();
 });
 
 function loadSavedData() {
   try {
     const savedStars = localStorage.getItem('math_kids_stars');
+    const savedStageStars = localStorage.getItem('math_kids_stage_stars');
     const savedStickers = localStorage.getItem('math_kids_stickers');
     const savedDiff = localStorage.getItem('math_kids_diff');
     const savedTheme = localStorage.getItem('math_kids_theme');
     if (savedStars) STATE.stars = parseInt(savedStars, 10);
+    if (savedStageStars) STATE.stageStars = parseInt(savedStageStars, 10);
     if (savedStickers) STATE.stickers = JSON.parse(savedStickers);
     if (savedDiff) {
-      STATE.difficulty = parseInt(savedDiff, 10);
+      STATE.difficulty = Math.max(1, Math.min(4, parseInt(savedDiff, 10)));
       document.querySelectorAll('.diff-btn').forEach(btn => {
         btn.classList.toggle('active', parseInt(btn.dataset.level, 10) === STATE.difficulty);
       });
@@ -146,6 +159,7 @@ function loadSavedData() {
 function saveData() {
   try {
     localStorage.setItem('math_kids_stars', STATE.stars);
+    localStorage.setItem('math_kids_stage_stars', STATE.stageStars);
     localStorage.setItem('math_kids_stickers', JSON.stringify(STATE.stickers));
     localStorage.setItem('math_kids_diff', STATE.difficulty);
     localStorage.setItem('math_kids_theme', STATE.currentTheme);
@@ -216,19 +230,22 @@ function setupUIEventListeners() {
     });
   });
 
-  // 난이도 선택 버튼 (1단계: 6~10부터 시작)
+  // 난이도 선택 버튼 (1단계: 1~5부터 4단계: 16~20까지)
   document.querySelectorAll('.diff-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       window.sound.playClick();
       document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
       e.currentTarget.classList.add('active');
       STATE.difficulty = parseInt(e.currentTarget.dataset.level, 10);
+      STATE.stageStars = 0; // 새 난이도 선택 시 목표 별 리셋
       saveData();
+      updateLevelGoalProgress();
       
       const diffNames = {
-        1: '1단계, 6부터 10까지 덧셈 뺄셈이에요!',
-        2: '2단계, 10 만들기랑 15까지 도전해봐요!',
-        3: '3단계, 20까지 최고 난이도예요!'
+        1: '1단계, 1부터 5까지 재미있는 기초 셈이에요!',
+        2: '2단계, 6부터 10까지 덧셈 뺄셈이에요!',
+        3: '3단계, 11부터 15까지 도전해봐요!',
+        4: '4단계, 20까지 최고 난이도 마스터예요!'
       };
       window.sound.speak(diffNames[STATE.difficulty]);
     });
@@ -261,39 +278,92 @@ function showScreen(screenId) {
 }
 
 // ----------------------------------------------------
-// 문제 생성기 (난이도 1단계는 6~10 수 범위 보장)
+// 목표 진행도 및 상단 상태 UI 갱신
+// ----------------------------------------------------
+function updateLevelGoalProgress() {
+  const config = LEVEL_CONFIG[STATE.difficulty] || LEVEL_CONFIG[1];
+  const badgeEl = document.getElementById('current-level-badge');
+  const textEl = document.getElementById('goal-remaining-text');
+  const fillEl = document.getElementById('goal-progress-fill');
+  
+  if (badgeEl) badgeEl.textContent = config.name;
+  
+  const current = Math.min(STATE.stageStars, config.targetStars);
+  const remaining = Math.max(0, config.targetStars - current);
+  const pct = Math.min(100, Math.round((current / config.targetStars) * 100));
+
+  if (textEl) {
+    if (remaining === 0) {
+      textEl.innerHTML = `🎉 <strong>목표 달성! 레벨업!</strong>`;
+    } else {
+      textEl.innerHTML = `승급까지 ⭐ <strong>${remaining}개</strong> 남음!`;
+    }
+  }
+  if (fillEl) fillEl.style.width = `${pct}%`;
+}
+
+// 오답 패널티 플로팅 토스트 표시
+function triggerPenaltyToast() {
+  const toast = document.getElementById('penalty-toast');
+  if (!toast) return;
+  toast.classList.remove('active');
+  void toast.offsetWidth; // 리플로우
+  toast.classList.add('active');
+  setTimeout(() => {
+    toast.classList.remove('active');
+  }, 1600);
+}
+
+// ----------------------------------------------------
+// 문제 생성기 (1단계: 1~5, 2단계: 6~10, 3단계: 11~15, 4단계: 16~20)
 // ----------------------------------------------------
 function generateProblem(type) {
   let num1, num2, ans;
   
   if (type === 'add') {
     if (STATE.difficulty === 1) {
+      // 1단계: 1~5 (합이 2~5)
+      ans = Math.floor(Math.random() * 4) + 2; // 2, 3, 4, 5
+      num1 = Math.floor(Math.random() * (ans - 1)) + 1;
+      num2 = ans - num1;
+    } else if (STATE.difficulty === 2) {
+      // 2단계: 6~10 (합이 6~10)
       ans = Math.floor(Math.random() * 5) + 6; // 6, 7, 8, 9, 10
       num1 = Math.floor(Math.random() * (ans - 2)) + 1;
       num2 = ans - num1;
-    } else if (STATE.difficulty === 2) {
-      ans = Math.floor(Math.random() * 6) + 10; // 10 ~ 15
-      num1 = Math.floor(Math.random() * 6) + 4;
+    } else if (STATE.difficulty === 3) {
+      // 3단계: 11~15 (합이 11~15)
+      ans = Math.floor(Math.random() * 5) + 11; // 11, 12, 13, 14, 15
+      num1 = Math.floor(Math.random() * 5) + 4;
       num2 = ans - num1;
     } else {
-      ans = Math.floor(Math.random() * 7) + 14; // 14 ~ 20
-      num1 = Math.floor(Math.random() * 7) + 7;
+      // 4단계: 16~20 (합이 16~20)
+      ans = Math.floor(Math.random() * 5) + 16; // 16, 17, 18, 19, 20
+      num1 = Math.floor(Math.random() * 6) + 7;
       num2 = ans - num1;
     }
     return { num1, num2, ans, type: '+' };
   } else {
     // 뺄셈
     if (STATE.difficulty === 1) {
-      num1 = Math.floor(Math.random() * 5) + 6; // 6, 7, 8, 9, 10
-      num2 = Math.floor(Math.random() * (num1 - 2)) + 1;
+      // 1단계: 1~5 (num1이 2~5)
+      num1 = Math.floor(Math.random() * 4) + 2; // 2, 3, 4, 5
+      num2 = Math.floor(Math.random() * (num1 - 1)) + 1;
       ans = num1 - num2;
     } else if (STATE.difficulty === 2) {
-      num1 = Math.floor(Math.random() * 6) + 10;
-      num2 = Math.floor(Math.random() * 6) + 3;
+      // 2단계: 6~10 (num1이 6~10)
+      num1 = Math.floor(Math.random() * 5) + 6; // 6 ~ 10
+      num2 = Math.floor(Math.random() * (num1 - 2)) + 1;
+      ans = num1 - num2;
+    } else if (STATE.difficulty === 3) {
+      // 3단계: 11~15 (num1이 11~15)
+      num1 = Math.floor(Math.random() * 5) + 11;
+      num2 = Math.floor(Math.random() * 5) + 3;
       ans = num1 - num2;
     } else {
-      num1 = Math.floor(Math.random() * 6) + 15;
-      num2 = Math.floor(Math.random() * 8) + 5;
+      // 4단계: 16~20 (num1이 16~20)
+      num1 = Math.floor(Math.random() * 5) + 16;
+      num2 = Math.floor(Math.random() * 6) + 5;
       ans = num1 - num2;
     }
     return { num1, num2, ans, type: '-' };
@@ -527,14 +597,21 @@ function renderChoices(correctAns) {
   const choicesArea = document.getElementById('choices-area');
   choicesArea.innerHTML = '';
 
-  // 오답 후보 2개 생성 (정답과 1~3 차이나는 숫자)
+  // 오답 후보 2개 생성 (정답과 1~3 차이나는 숫자, 0 이하 제외)
   const choices = [correctAns];
-  while (choices.length < 3) {
-    const diff = (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 2) + 1);
+  let loopCount = 0;
+  while (choices.length < 3 && loopCount < 40) {
+    loopCount++;
+    const diff = (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 3) + 1);
     const candidate = correctAns + diff;
     if (candidate > 0 && !choices.includes(candidate)) {
       choices.push(candidate);
     }
+  }
+  let fallback = 1;
+  while (choices.length < 3) {
+    if (!choices.includes(fallback)) choices.push(fallback);
+    fallback++;
   }
 
   // 보기 섞기
@@ -563,7 +640,7 @@ function goToNextProblem() {
   else if (STATE.currentMode === 'quiz') nextQuizProblem();
 }
 
-// 정답 선택 처리
+// 정답 선택 처리 (보상, 레벨업 판별 및 오답 패널티)
 function handleAnswer(selectedVal, correctAns, btnElement) {
   if (selectedVal === correctAns) {
     // 정답! - 버튼 중복 클릭 방지
@@ -571,45 +648,126 @@ function handleAnswer(selectedVal, correctAns, btnElement) {
 
     window.sound.playCorrect();
     document.getElementById('eq-ans').textContent = correctAns;
+    
+    // 별 및 스테이지 목표 별 획득
     STATE.stars += 1;
+    STATE.stageStars += 1;
     
     // 랜덤 스티커 보상 획득
     const newSticker = STICKER_POOL[Math.floor(Math.random() * STICKER_POOL.length)];
     STATE.stickers.push(newSticker);
     saveData();
     updateHeaderStats();
+    updateLevelGoalProgress();
 
     // 폭죽(컨페티) 발사
     triggerConfetti();
 
-    // 칭찬 멘트
-    const compliments = [
-      '정답이야! 정말 대단해!',
-      '와아! 천재 아니야? 멋져!',
-      '딩동댕! 칭찬 스티커를 줄게!',
-      '우와! 최고야 최고!'
-    ];
-    const praise = compliments[Math.floor(Math.random() * compliments.length)];
-    window.sound.speak(`${correctAns}! ${praise}`);
+    const config = LEVEL_CONFIG[STATE.difficulty] || LEVEL_CONFIG[1];
 
-    // 축하 팝업 모달 띄우기
-    setTimeout(() => {
-      showRewardModal(newSticker, praise);
-    }, 450);
+    // 목표 별 개수 달성 시 -> 레벨업 대축제 모달!
+    if (STATE.stageStars >= config.targetStars) {
+      setTimeout(() => {
+        showLevelUpModal(config);
+      }, 400);
+    } else {
+      // 일반 정답 칭찬 및 보상 모달
+      const compliments = [
+        '정답이야! 정말 대단해!',
+        '와아! 천재 아니야? 멋져!',
+        '딩동댕! 칭찬 스티커를 줄게!',
+        '우와! 최고야 최고!'
+      ];
+      const praise = compliments[Math.floor(Math.random() * compliments.length)];
+      window.sound.speak(`${correctAns}! ${praise}`);
+
+      setTimeout(() => {
+        showRewardModal(newSticker, praise);
+      }, 450);
+    }
   } else {
-    // 오답 (기죽지 않는 따뜻한 피드백)
-    window.sound.playEncourage();
+    // 오답 (스마트 패널티: 별 1개 감소 및 시각 효과)
+    window.sound.playPenalty();
     btnElement.classList.add('shake-it');
     setTimeout(() => btnElement.classList.remove('shake-it'), 400);
 
-    const encourages = [
-      '괜찮아! 다시 한번 세어볼까?',
-      '아쉽다! 천천히 다시 해보자!',
-      '할 수 있어! 하나씩 콕콕 세어봐!'
+    // 유아 친화적 감점 패널티 (0개 미만 방어선)
+    let penaltyOccurred = false;
+    if (STATE.stars > 0) {
+      STATE.stars -= 1;
+      penaltyOccurred = true;
+    }
+    if (STATE.stageStars > 0) {
+      STATE.stageStars -= 1;
+    }
+    saveData();
+    updateHeaderStats();
+    updateLevelGoalProgress();
+
+    // 플로팅 토스트 표시
+    triggerPenaltyToast();
+
+    // 다정한 격려 음성
+    const penaltyMsgs = [
+      '앗, 별 하나가 도망갔어요! 다시 맞추면 별을 되찾을 수 있어! 힘내!',
+      '괜찮아! 천천히 다시 세어보고 별을 다시 찾아오자!',
+      '아쉽다! 하나씩 콕콕 다시 세어볼까? 할 수 있어!'
     ];
-    const msg = encourages[Math.floor(Math.random() * encourages.length)];
+    const msg = penaltyMsgs[Math.floor(Math.random() * penaltyMsgs.length)];
     window.sound.speak(msg);
   }
+}
+
+// 레벨업 대축제 모달 표시 (목표 달성 시 화려한 승급)
+function showLevelUpModal(currentConfig) {
+  window.sound.playLevelUp();
+  triggerConfetti();
+
+  const isMaxLevel = STATE.difficulty >= 4;
+  const nextLevelNum = isMaxLevel ? 4 : STATE.difficulty + 1;
+  const bonusReward = currentConfig.reward || '👑';
+  STATE.stickers.push(bonusReward);
+  
+  // 스테이지 별 초기화 및 다음 단계 진입
+  STATE.stageStars = 0;
+  if (!isMaxLevel) {
+    STATE.difficulty = nextLevelNum;
+  }
+  saveData();
+  updateHeaderStats();
+  updateLevelGoalProgress();
+
+  // 홈 화면 난이도 버튼 활성화 상태 동기화
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.level, 10) === STATE.difficulty);
+  });
+
+  const modalOverlay = document.getElementById('levelup-modal-overlay');
+  const titleEl = document.getElementById('modal-levelup-title');
+  const descEl = document.getElementById('modal-levelup-desc');
+  const bonusItemEl = document.getElementById('levelup-bonus-item');
+  const nextBtn = document.getElementById('modal-levelup-btn');
+
+  if (isMaxLevel) {
+    titleEl.textContent = '🌟 수학 챔피언 등극!';
+    descEl.textContent = '축하해요! 모든 단계를 완벽하게 정복했어요!';
+    nextBtn.textContent = '계속해서 최고 마스터 도전하기! 🚀';
+    window.sound.speak('축하합니다! 모든 단계를 완벽하게 정복한 수학 챔피언이에요!');
+  } else {
+    titleEl.textContent = '🎉 레벨업 대축제!';
+    descEl.textContent = `축하해요! 이제 ${LEVEL_CONFIG[nextLevelNum].name}로 승급합니다!`;
+    nextBtn.textContent = `${LEVEL_CONFIG[nextLevelNum].name}로 모험 떠나기! 🚀`;
+    window.sound.speak(`와아! 목표를 달성했어요! 축하합니다! 이제 ${LEVEL_CONFIG[nextLevelNum].name}로 승급했어요!`);
+  }
+
+  bonusItemEl.textContent = bonusReward;
+  modalOverlay.classList.add('active');
+
+  nextBtn.onclick = (e) => {
+    e.stopPropagation();
+    modalOverlay.classList.remove('active');
+    goToNextProblem();
+  };
 }
 
 // 축하 모달 표시 (1.5초 후 자동 다음 문제 이동 + 화면 어디든 탭해도 즉시 이동)

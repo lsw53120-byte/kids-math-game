@@ -4,6 +4,7 @@ class SoundManager {
     this.ctx = null;
     this.isMuted = false;
     this.speechEnabled = true;
+    this.currentSpeechAudio = null;
   }
 
   init() {
@@ -199,20 +200,206 @@ class SoundManager {
     } catch(e) {}
   }
 
-  // 한국어 음성 읽어주기 (TTS)
-  speak(text) {
+  // 패널티 사운드: 별이 도망가는 소리 (뾰로롱 하강음)
+  playPenalty() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const notes = [659.25, 587.33, 493.88, 392.00]; // E5 -> D5 -> B4 -> G4 하강
+      const t = this.ctx.currentTime;
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t + idx * 0.08);
+        gain.gain.setValueAtTime(0.2, t + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.08 + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + idx * 0.08);
+        osc.stop(t + idx * 0.08 + 0.2);
+      });
+    } catch(e) {}
+  }
+
+  // 레벨업 대축제 팡파레 (화려한 상승 팡파레)
+  playLevelUp() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      // C4 -> E4 -> G4 -> C5 -> E5 -> G5 -> C6
+      const fanfare = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
+      const t = this.ctx.currentTime;
+      fanfare.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t + idx * 0.09);
+        const dur = (idx === fanfare.length - 1) ? 0.6 : 0.12;
+        gain.gain.setValueAtTime(0.25, t + idx * 0.09);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.09 + dur);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + idx * 0.09);
+        osc.stop(t + idx * 0.09 + dur + 0.05);
+      });
+    } catch(e) {}
+  }
+
+  // 진행 중인 모든 음성 중지
+  stopSpeech() {
+    if (this.currentSpeechAudio) {
+      try {
+        this.currentSpeechAudio.pause();
+        this.currentSpeechAudio.currentTime = 0;
+      } catch (e) {}
+      this.currentSpeechAudio = null;
+    }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    document.body.classList.remove('is-ai-speaking');
+  }
+
+  // 고품질 자연스러운 한국어 음성(Voice) 탐색 (오프라인 Fallback용)
+  getBestKoreanVoice() {
+    if (!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) return null;
+
+    const koVoices = voices.filter(v => v.lang && (v.lang === 'ko-KR' || v.lang.startsWith('ko')));
+    if (koVoices.length === 0) return null;
+
+    const priorityKeywords = ['google', 'natural', 'neural', 'online', 'yuna', 'sora', 'sunhi', 'injoon'];
+    for (const kw of priorityKeywords) {
+      const found = koVoices.find(v => v.name.toLowerCase().includes(kw));
+      if (found) return found;
+    }
+    return koVoices[0];
+  }
+
+  // 2순위 오프라인 Web Speech API 음성 재생
+  speakFallback(cleanText) {
     if (!this.speechEnabled || !('speechSynthesis' in window)) return;
     try {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ko-KR';
-      utterance.rate = 0.95;
-      utterance.pitch = 1.3;
-      window.speechSynthesis.speak(utterance);
+      setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = 'ko-KR';
+        const bestVoice = this.getBestKoreanVoice();
+        if (bestVoice) utterance.voice = bestVoice;
+
+        utterance.rate = 0.95;
+        utterance.pitch = 1.05;
+
+        utterance.onstart = () => document.body.classList.add('is-ai-speaking');
+        utterance.onend = () => document.body.classList.remove('is-ai-speaking');
+        utterance.onerror = () => document.body.classList.remove('is-ai-speaking');
+
+        window.speechSynthesis.speak(utterance);
+      }, 30);
     } catch (e) {
       console.warn(e);
     }
   }
+
+  // 숫자를 한국어 표준 고유어 발음(수관형사)으로 변환하는 필터 (예: 5대 -> 다섯 대, 3개 -> 세 개, 1! -> 하나!)
+  formatKoreanNaturalSpeech(text) {
+    if (!text) return '';
+
+    // 1. 단위명사(개, 대, 마리, 알, 명 등) 앞의 숫자 변환 (1~20)
+    const nativeUnits = {
+      1: '한', 2: '두', 3: '세', 4: '네', 5: '다섯',
+      6: '여섯', 7: '일곱', 8: '여덟', 9: '아홉', 10: '열',
+      11: '열한', 12: '열두', 13: '열세', 14: '열네', 15: '열다섯',
+      16: '열여섯', 17: '열일곱', 18: '열여덟', 19: '열아홉', 20: '스무'
+    };
+
+    // "5대", "3개", "5개와", "2대 중" 등 단위 앞 숫자를 순우리말로 치환
+    let formatted = text.replace(/(\d+)\s*(개|대|마리|알|명|송이|권|그릇|조각|가지)/g, (match, numStr, unit) => {
+      const n = parseInt(numStr, 10);
+      if (nativeUnits[n]) {
+        return `${nativeUnits[n]} ${unit}`;
+      }
+      return match;
+    });
+
+    // 2. 단독 카운팅 숫자 (터치할 때 "1!", "2!", "3!" 등)를 "하나!", "둘!", "셋!"으로 변환
+    const countingWords = {
+      1: '하나', 2: '둘', 3: '셋', 4: '넷', 5: '다섯',
+      6: '여섯', 7: '일곱', 8: '여덟', 9: '아홉', 10: '열',
+      11: '열하나', 12: '열둘', 13: '열셋', 14: '열넷', 15: '열다섯',
+      16: '열여섯', 17: '열일곱', 18: '열여덟', 19: '열아홉', 20: '스물'
+    };
+
+    formatted = formatted.replace(/^(\d+)([!?.~]*)$/, (match, numStr, punc) => {
+      const n = parseInt(numStr, 10);
+      if (countingWords[n]) {
+        return `${countingWords[n]}${punc}`;
+      }
+      return match;
+    });
+
+    return formatted;
+  }
+
+  // 자연스러운 한국어 음성 읽어주기 (1순위: Google Neural 고품질 여성 성우, 2순위: 로컬 음성)
+  speak(text) {
+    if (!this.speechEnabled) return;
+    this.stopSpeech();
+
+    // 1단계: 순우리말 표준 발음 변환 (5대 -> 다섯 대, 3개 -> 세 개, 1! -> 하나!)
+    const naturalText = this.formatKoreanNaturalSpeech(text);
+
+    // 2단계: 이모지 및 불필요한 기호 제거하여 더욱 맑고 자연스러운 발음 유도
+    const cleanText = naturalText
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '') // 이모지 제거
+      .replace(/[!?,]/g, (match) => `${match} `) // 구두점 호흡 확보
+      .trim();
+
+    if (!cleanText) return;
+
+    // 1순위: 맑고 부드러운 Google Neural 음성 스트리밍 (진짜 사람 목소리 품질)
+    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ko&client=tw-ob&q=${encodeURIComponent(cleanText)}`;
+    const audio = new Audio();
+    this.currentSpeechAudio = audio;
+
+    let fallbackTriggered = false;
+    const triggerFallback = () => {
+      if (fallbackTriggered) return;
+      fallbackTriggered = true;
+      if (this.currentSpeechAudio === audio) {
+        this.currentSpeechAudio = null;
+      }
+      this.speakFallback(cleanText);
+    };
+
+    audio.src = ttsUrl;
+    audio.onplay = () => {
+      document.body.classList.add('is-ai-speaking');
+    };
+    audio.onended = () => {
+      document.body.classList.remove('is-ai-speaking');
+      if (this.currentSpeechAudio === audio) this.currentSpeechAudio = null;
+    };
+    audio.onerror = () => {
+      triggerFallback();
+    };
+
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        // 네트워크 차단 또는 브라우저 정책 시 Web Speech로 자동 전환
+        console.warn('Google Neural TTS play failed, fallback to local voice:', err);
+        triggerFallback();
+      });
+    }
+  }
+}
+
+// 브라우저 음성 목록 비동기 프리로드
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => {
+    if (window.sound) window.sound.getBestKoreanVoice();
+  };
 }
 
 window.sound = new SoundManager();

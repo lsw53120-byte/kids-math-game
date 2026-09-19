@@ -338,14 +338,21 @@ body {
   gap: 8px;
 }
 
+.diff-tabs.four-cols {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
 .diff-btn {
   flex: 1;
-  padding: 10px 4px;
+  padding: 8px 2px;
   border: 2px solid #ffe8cc;
   background: #fff9db;
   border-radius: 14px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.25;
   font-weight: bold;
   cursor: pointer;
   color: #d9480f;
@@ -802,4 +809,290 @@ body {
 
 .shake-it {
   animation: shake 0.3s ease-in-out;
+}
+
+/* ==================================================== */
+/* 신규: 레벨 목표 진행도 바 & 오답 패널티 & 레벨업 시스템 */
+/* ==================================================== */
+
+/* 레벨 목표 진행 바 */
+.level-goal-bar {
+  background: white;
+  border-radius: 18px;
+  padding: 8px 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  border: 2px solid #ffd8a8;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.level-goal-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.level-badge {
+  background: linear-gradient(135deg, #ff922b, #f76707);
+  color: white;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 5px rgba(247, 103, 7, 0.3);
+}
+
+.goal-text {
+  color: #495057;
+  font-weight: bold;
+}
+
+.goal-text strong {
+  color: #f08c00;
+}
+
+.progress-track {
+  width: 100%;
+  height: 12px;
+  background: #f1f3f5;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd43b, #ff922b, #ff6b8b);
+  border-radius: 10px;
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 4px rgba(255, 146, 43, 0.5);
+}
+
+/* 오답 패널티 플로팅 토스트 */
+.penalty-toast {
+  position: absolute;
+  top: 65px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: linear-gradient(135deg, #ff6b6b, #fa5252);
+  color: white;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(250, 82, 82, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 150;
+  transition: all 0.3s ease;
+}
+
+.penalty-toast.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  animation: penaltyFloat 1.6s forwards ease;
+}
+
+@keyframes penaltyFloat {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.9); }
+  20% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.05); }
+  35% { transform: translateX(-50%) translateY(0) scale(1); }
+  75% { opacity: 1; transform: translateX(-50%) translateY(-5px); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-25px); }
+}
+
+/* AI 음성 말하기 시각 효과 */
+body.is-ai-speaking .mascot-char {
+  animation: speakingPulse 0.4s infinite alternate ease-in-out;
+}
+
+body.is-ai-speaking .voice-replay-btn {
+  background: #ffec99;
+  border-color: #fcc419;
+  animation: voiceGlow 0.6s infinite alternate;
+}
+
+@keyframes speakingPulse {
+  0% { transform: scale(1) rotate(-2deg); }
+  100% { transform: scale(1.1) rotate(2deg); }
+}
+
+@keyframes voiceGlow {
+  0% { box-shadow: 0 0 5px #ffd43b; }
+  100% { box-shadow: 0 0 16px #ff922b; }
+}
+
+/* 레벨업 대축제 모달 특화 스타일 */
+.levelup-modal {
+  background: linear-gradient(180deg, #ffffff 0%, #fff9db 100%);
+  border: 4px solid #ffd43b;
+  position: relative;
+  overflow: visible;
+}
+
+.levelup-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff922b, #e03131);
+  color: white;
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 10px rgba(224, 49, 49, 0.4);
+  margin-bottom: 6px;
+  animation: pulse 1s infinite alternate;
+}
+
+.bounce-chest {
+  font-size: 80px;
+  animation: chestBounce 1s infinite ease-in-out;
+  filter: drop-shadow(0 10px 14px rgba(255, 169, 77, 0.4));
+}
+
+@keyframes chestBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-16px) scale(1.15) rotate(-3deg); }
+}
+
+.levelup-reward-box {
+  background: #fff3bf;
+  border: 2px dashed #f59f00;
+  border-radius: 16px;
+  padding: 10px;
+  margin: 12px 0 16px;
+}
+
+.levelup-btn {
+  background: linear-gradient(135deg, #ff922b, #f76707) !important;
+  color: white !important;
+  box-shadow: 0 6px 16px rgba(247, 103, 7, 0.4) !important;
+  font-size: 16px !important;
+}
+
+/* ==================================================== */
+/* Google Play & iOS App Store 스타일 원클릭 설치 카드 */
+/* ==================================================== */
+.store-install-card {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border: 2px solid #dee2e6;
+  border-radius: 20px;
+  padding: 14px 12px;
+  margin-top: 10px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.store-badge-header {
+  font-size: 12px;
+  font-weight: bold;
+  color: #495057;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.store-button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.store-install-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 8px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  color: white;
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-align: left;
+}
+
+.store-install-btn:active {
+  transform: scale(0.95);
+}
+
+.store-install-btn.google-play {
+  background: linear-gradient(135deg, #01875f, #005f42);
+  box-shadow: 0 4px 10px rgba(1, 135, 95, 0.35);
+}
+
+.store-install-btn.app-store {
+  background: linear-gradient(135deg, #1c7ed6, #1864ab);
+  box-shadow: 0 4px 10px rgba(28, 126, 214, 0.35);
+}
+
+.store-icon {
+  font-size: 22px;
+}
+
+.store-btn-text small {
+  display: block;
+  font-size: 10px;
+  opacity: 0.85;
+  font-weight: normal;
+}
+
+.store-btn-text strong {
+  display: block;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.store-install-caption {
+  font-size: 11px;
+  color: #868e96;
+  margin-top: 8px;
+}
+
+/* iOS 설치 안내 모달 */
+.ios-guide-modal {
+  text-align: center;
+  max-width: 340px;
+}
+
+.ios-steps-box {
+  background: #f8f9fa;
+  border-radius: 16px;
+  padding: 12px;
+  margin-top: 14px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #343a40;
+}
+
+.ios-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ios-step-item .step-num {
+  background: #1c7ed6;
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+  flex-shrink: 0;
+  margin-top: 1px;
 }

@@ -21,7 +21,7 @@ html = re.sub(r'<link[^>]*href=["\']style\.css["\'][^>]*>', f'<style>\n{css}\n</
 # 2. JS 인라인 치환 (<script src="audio.js"></script> 및 <script src="game.js"></script>)
 script_pattern = r'<script[^>]*src=["\']audio\.js["\'][^>]*><\/script>\s*<script[^>]*src=["\']game\.js["\'][^>]*><\/script>'
 js_bundle = f'<script>\n{audio}\n\n{game}\n</script>'
-html, count = re.subn(script_pattern, js_bundle, html)
+html, count = re.subn(script_pattern, lambda m: js_bundle, html)
 
 output_path = os.path.join(base_dir, "독립실행_kids_math_game.html")
 with open(output_path, "w", encoding="utf-8") as f:
